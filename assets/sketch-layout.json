@@ -1,0 +1,421 @@
+{
+  "label": "Your home: approximate sketch reconstruction",
+  "source": "User-provided hand sketch",
+  "version": 2,
+  "interpretation": "Latest refined interior hand sketch governs approximate relative geometry, viewed 90 degrees counterclockwise; earlier sketch supplies fixture details",
+  "coordinate_system": {
+    "units": "normalized sketch units",
+    "bounds": [
+      0,
+      0,
+      100,
+      58
+    ],
+    "origin": "lower left",
+    "real_world_scale": null
+  },
+  "confirmed": [
+    "There are three bedrooms; each contains a queen bed",
+    "The upper-left bedroom is R1, following the user's explicit correction; the other bedroom numbers remain unresolved",
+    "The building has eight apartments per floor",
+    "This home combines two apartments; the numbers 1 and 2 on the building diagram identify apartments, not bedrooms",
+    "The annotated building diagram places apartment 1 upper/right and apartment 2 left/lower, with a shared corridor at their inner elbow",
+    "The annotated entrance is on the lower boundary of apartment 1, opening to the shared corridor"
+  ],
+  "assumptions": [
+    "Room positions and proportions approximate the latest refined hand sketch, with no known physical scale; furniture details come from the earlier sketch",
+    "Upper-right and lower-central bedrooms use neutral location labels because both appear numbered r2 or room2; no R3 location is inferred",
+    "The left toilet's latest label appears t3, but this number is ambiguous and differs from the earlier toilet2 label",
+    "Bed dimensions, furniture placement, wall segments and door gaps are illustrative",
+    "Outside is an explicit cutout, not a confirmed entrance or corridor; the game's nearby departure point is fictional",
+    "Thick pen strokes do not establish wall thickness, structural status or openings",
+    "Building diagrams provide context only; the other six apartments and shared corridor are not reconstructed",
+    "The precise division and internal joining opening between the two combined apartments are not established by the interior sketch"
+  ],
+  "confirmations": [
+    {
+      "fact": "Three bedrooms; upper-left bedroom is R1",
+      "provenance": "User clarification, including exact correction: upper left is r1",
+      "other_bedroom_numbers": null
+    },
+    {
+      "fact": "Each bedroom contains a queen bed",
+      "provenance": "User clarification relayed by interface task",
+      "bed_dimensions": null
+    },
+    {
+      "fact": "Eight apartments per floor; this home combines two apartments",
+      "provenance": "User clarification relayed by root"
+    },
+    {
+      "fact": "Apartment 1 upper/right, apartment 2 left/lower; shared corridor at the inner elbow; entrance below apartment 1",
+      "provenance": "User-annotated building diagram, inspected locally",
+      "internal_joining_opening": null
+    }
+  ],
+  "rooms": [
+    {
+      "id": "bedroom_upper_left",
+      "label": "R1",
+      "bounds": [
+        0,
+        27,
+        32,
+        58
+      ],
+      "approximate_position": [
+        16.0,
+        42.5
+      ],
+      "use": "bedroom",
+      "use_evidence": "user-confirmed",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "r3 drawn, superseded by explicit user correction: upper left is r1",
+      "queen_bed": true
+    },
+    {
+      "id": "toilet_left",
+      "label": "LEFT TOILET",
+      "bounds": [
+        0,
+        17,
+        15,
+        27
+      ],
+      "approximate_position": [
+        7.5,
+        22.0
+      ],
+      "use": "toilet; number unclear",
+      "use_evidence": "earlier fixture label; latest number ambiguous",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "t3? (ambiguous; earlier sketch said toilet2)",
+      "queen_bed": null
+    },
+    {
+      "id": "laundry",
+      "label": "STORAGE / WASHING",
+      "bounds": [
+        0,
+        9,
+        31,
+        17
+      ],
+      "approximate_position": [
+        15.5,
+        13.0
+      ],
+      "use": "storage and washing",
+      "use_evidence": "observed-label in earlier detailed sketch",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "STORAGE / WASHING",
+      "queen_bed": null
+    },
+    {
+      "id": "living2",
+      "label": "LIVING 2",
+      "bounds": [
+        32,
+        33,
+        56,
+        58
+      ],
+      "approximate_position": [
+        44.0,
+        45.5
+      ],
+      "use": "living room",
+      "use_evidence": "observed-label",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "LIVING 2",
+      "queen_bed": null
+    },
+    {
+      "id": "storage",
+      "label": "STORAGE 2",
+      "bounds": [
+        32,
+        17,
+        56,
+        33
+      ],
+      "approximate_position": [
+        44.0,
+        25.0
+      ],
+      "use": "storage",
+      "use_evidence": "observed-label",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "Storage 2",
+      "queen_bed": null
+    },
+    {
+      "id": "bedroom_lower_center",
+      "label": "LOWER BEDROOM",
+      "bounds": [
+        32,
+        0,
+        56,
+        17
+      ],
+      "approximate_position": [
+        44.0,
+        8.5
+      ],
+      "use": "bedroom",
+      "use_evidence": "user-confirmed; number unresolved",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "room2 (conflicts with upper-right r2 label)",
+      "queen_bed": true
+    },
+    {
+      "id": "bedroom_upper_right",
+      "label": "UPPER-RIGHT BEDROOM",
+      "bounds": [
+        56,
+        37,
+        84,
+        58
+      ],
+      "approximate_position": [
+        70.0,
+        47.5
+      ],
+      "use": "bedroom",
+      "use_evidence": "user-confirmed; number unresolved",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "r2 (conflicts with lower room2 label)",
+      "queen_bed": true
+    },
+    {
+      "id": "living1",
+      "label": "LIVING 1",
+      "bounds": [
+        56,
+        17,
+        84,
+        37
+      ],
+      "approximate_position": [
+        70.0,
+        27.0
+      ],
+      "use": "living room",
+      "use_evidence": "observed-label",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "LIVING 1",
+      "queen_bed": null
+    },
+    {
+      "id": "outside",
+      "label": "OUTSIDE",
+      "bounds": [
+        56,
+        0,
+        84,
+        17
+      ],
+      "approximate_position": [
+        70.0,
+        8.5
+      ],
+      "use": "outside cutout; exact entrance and corridor connection unknown",
+      "use_evidence": "observed-label",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "Outside",
+      "queen_bed": null
+    },
+    {
+      "id": "kitchen",
+      "label": "KITCHEN",
+      "bounds": [
+        84,
+        26,
+        100,
+        58
+      ],
+      "approximate_position": [
+        92.0,
+        42.0
+      ],
+      "use": "kitchen",
+      "use_evidence": "latest K label and earlier sink, fridge, stove labels",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "K",
+      "queen_bed": null
+    },
+    {
+      "id": "bathroom",
+      "label": "T1 / SHOWER",
+      "bounds": [
+        84,
+        4,
+        100,
+        26
+      ],
+      "approximate_position": [
+        92.0,
+        15.0
+      ],
+      "use": "bathroom",
+      "use_evidence": "latest T1 label and earlier shower, sink, toilet labels",
+      "geometry_evidence": "approximate visual interpretation of latest refined sketch",
+      "measured_dimensions": null,
+      "observed_raw_label": "T1",
+      "queen_bed": null
+    }
+  ],
+  "observed_fixture_labels": {
+    "living2": [
+      "sofa",
+      "TV",
+      "table"
+    ],
+    "living1": [
+      "table",
+      "TV",
+      "storage",
+      "sofa"
+    ],
+    "laundry": [
+      "storage",
+      "washing"
+    ],
+    "kitchen": [
+      "sink",
+      "fridge",
+      "stove"
+    ],
+    "bathroom": [
+      "shower",
+      "sink",
+      "toilet"
+    ]
+  },
+  "connections": [
+    {
+      "between": [
+        "bedroom_upper_left",
+        "living2"
+      ],
+      "evidence": "inferred from rough adjacency and openings in sketch",
+      "confirmed": false,
+      "traversable": null,
+      "clearance": null
+    },
+    {
+      "between": [
+        "bedroom_upper_left",
+        "toilet_left"
+      ],
+      "evidence": "inferred from rough adjacency and openings in sketch",
+      "confirmed": false,
+      "traversable": null,
+      "clearance": null
+    },
+    {
+      "between": [
+        "bedroom_upper_left",
+        "laundry"
+      ],
+      "evidence": "inferred from rough adjacency and openings in sketch",
+      "confirmed": false,
+      "traversable": null,
+      "clearance": null
+    },
+    {
+      "between": [
+        "living2",
+        "storage"
+      ],
+      "evidence": "inferred from rough adjacency and openings in sketch",
+      "confirmed": false,
+      "traversable": null,
+      "clearance": null
+    },
+    {
+      "between": [
+        "storage",
+        "bedroom_lower_center"
+      ],
+      "evidence": "inferred from rough adjacency and openings in sketch",
+      "confirmed": false,
+      "traversable": null,
+      "clearance": null
+    },
+    {
+      "between": [
+        "living2",
+        "living1"
+      ],
+      "evidence": "inferred from rough adjacency and openings in sketch",
+      "confirmed": false,
+      "traversable": null,
+      "clearance": null
+    },
+    {
+      "between": [
+        "living1",
+        "bedroom_upper_right"
+      ],
+      "evidence": "inferred from rough adjacency and openings in sketch",
+      "confirmed": false,
+      "traversable": null,
+      "clearance": null
+    },
+    {
+      "between": [
+        "living1",
+        "outside"
+      ],
+      "evidence": "inferred from rough adjacency and openings in sketch",
+      "confirmed": false,
+      "traversable": null,
+      "clearance": null
+    },
+    {
+      "between": [
+        "living1",
+        "kitchen"
+      ],
+      "evidence": "inferred from rough adjacency and openings in sketch",
+      "confirmed": false,
+      "traversable": null,
+      "clearance": null
+    },
+    {
+      "between": [
+        "living1",
+        "bathroom"
+      ],
+      "evidence": "inferred from rough adjacency and openings in sketch",
+      "confirmed": false,
+      "traversable": null,
+      "clearance": null
+    }
+  ],
+  "unknowns": [
+    "All real dimensions and scale",
+    "Queen bed dimensions",
+    "Bedroom numbering for upper-right and lower-central bedrooms; R3 location is not assigned",
+    "Left toilet number: latest t3? versus earlier toilet2",
+    "Meaning of thick pen strokes",
+    "Exact wall thickness, lengths and room shapes",
+    "Door locations, swings and clear widths",
+    "Exact entrance and relationship of Outside cutout to shared corridor",
+    "Confirmed circulation between rooms",
+    "Exact internal joining opening and boundary between the combined apartments",
+    "Household belongings locations and current state"
+  ],
+  "limitations": "Illustrative reconstruction only. Do not infer navigation, accessibility, renovation quantities or safety from this geometry. Kitchen and bathroom uses are inferred from fixture labels. Furniture placement and door gaps are approximate symbols."
+}

@@ -1,0 +1,11 @@
+.runtime/
+.coordination/
+.codebase-memory/
+__pycache__/
+*.pyc
+.DS_Store
+*.blend1
+blender/*.log
+.env
+.env.*
+!.env.example

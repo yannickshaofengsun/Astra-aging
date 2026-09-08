@@ -1,0 +1,42 @@
+{
+  "demo": [
+    {
+      "id": "invitation",
+      "label": "Living room",
+      "x": 0.321074,
+      "y": 0.564207
+    },
+    {
+      "id": "bag",
+      "label": "Bedroom",
+      "x": 0.515712,
+      "y": 0.359705
+    },
+    {
+      "id": "entrance",
+      "label": "Entrance",
+      "x": 0.582077,
+      "y": 0.702943
+    }
+  ],
+  "sketch": [
+    {
+      "id": "invitation",
+      "label": "Living 1",
+      "x": 0.644576,
+      "y": 0.578292
+    },
+    {
+      "id": "bag",
+      "label": "R1",
+      "x": 0.366875,
+      "y": 0.300311
+    },
+    {
+      "id": "entrance",
+      "label": "Departure point (illustrative)",
+      "x": 0.649915,
+      "y": 0.67302
+    }
+  ]
+}
