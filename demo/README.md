@@ -1,8 +1,8 @@
 # CareAnchor demo
 
-[Watch or download the 60-second MP4](careanchor-demo.mp4) · [Transcript](transcript.md) · [Captions](captions.srt)
+[Watch or download the 60-second MP4](careanchor-demo.mp4) · [Narration script](transcript.md) · [Captions](captions.srt)
 
-Recorded September 8, 2026 from the working local application. The film uses actual interface interactions and two live GPT-6-Astra requests, with a fictional resident, Alex, Morgan, and a fictional hospital. Narration is synthesized; model waiting time and pauses are shortened.
+Recorded September 8, 2026 from the working local application. The film uses actual interface interactions and two live GPT-6-Astra requests, with a fictional resident, Alex, Morgan, and a fictional hospital. This cut has captions and no audio; narration can be recorded later. Model waiting time and pauses are shortened.
 
 The recording shows:
 

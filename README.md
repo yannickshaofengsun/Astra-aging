@@ -4,11 +4,11 @@ A hackathon household simulation: editable Blender homes, a shared household wee
 
 ## Watch the demo
 
-[**Watch or download the 60-second demo (MP4)**](demo/careanchor-demo.mp4) · [Transcript](demo/transcript.md) · [Captions](demo/captions.srt)
+[**Watch or download the 60-second demo (MP4)**](demo/careanchor-demo.mp4) · [Narration script](demo/transcript.md) · [Captions](demo/captions.srt)
 
 [![CareAnchor demo](demo/preview.jpg)](demo/careanchor-demo.mp4)
 
-The one-minute pitch covers the target customer, product vision, working prototype, and intended impact. Recorded app interactions show two live GPT-6-Astra interpretations, separate family acceptances, and a changed hospital notice that requires fresh replies. The target buyer and impact remain hypotheses to test in real pilots. The recording uses fictional household/provider data in the web rehearsal; it does not depict an Apple Messages round trip. Model waiting time and pauses are shortened.
+The current cut has captions and no audio, ready for narration later. The one-minute pitch covers the target customer, product vision, working prototype, and intended impact. Recorded app interactions show two live GPT-6-Astra interpretations, separate family acceptances, and a changed hospital notice that requires fresh replies. The target buyer and impact remain hypotheses to test in real pilots. The recording uses fictional household/provider data in the web rehearsal; it does not depict an Apple Messages round trip. Model waiting time and pauses are shortened.
 
 CareAnchor is the product; **GPT-6-Astra is the model**. The application calls the signed-in Codex desktop runtime for structured interpretations, validates the proposed actions in Python, and updates one shared household plan. This is a bounded agent workflow built without a separate agent framework. A controlled local Apple Messages self-chat test also verified automatic intake, a real model call, and an automatic reply shown as Delivered; a separate older-adult device and voice input have not been verified.
 
