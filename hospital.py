@@ -265,6 +265,7 @@ class Hospital:
         if not self.state["permissions"]["pickup_requests" if kinds == ("pickup",) else "visit_requests"]:
             return self._waiting(request, "Standing permission for these named requests is missing.", True)
         expected_version = request["source_version"] if kinds == ("pickup",) else self.state["shared_version"]
+        on_date = self.host.coordination.state["date"] if kinds == ("pickup",) else self.state["shared_appointment"]["date"]
         responsibilities = []
         for kind in kinds:
             relevant = [c for c in self.state["commitments"] if c["id"] in request["commitment_ids"] and c["kind"] == kind
@@ -280,12 +281,16 @@ class Hospital:
             if any(c["status"] == "requested" for c in relevant):
                 continue  # Issue other independent responsibilities before waiting.
             primary = request["helper"] if kind == "pickup" else request["helpers"][kind]
-            if not relevant:
+            if not relevant and self.host.coordination.availability_for(primary, on_date) is not False:
                 return self._new_commitment(request, kind, primary, len(request["commitment_ids"]))
-            tried = {c["actor_id"] for c in relevant}
-            backup = next((actor for actor in ACTORS if actor not in tried), None)
+            tried = {c["actor_id"] for c in relevant} | {primary}
+            backup = next((actor for actor in ACTORS if actor not in tried
+                           and self.host.coordination.availability_for(actor, on_date) is not False), None)
             if backup and self.state["permissions"]["backup_requests"]:
                 return self._new_commitment(request, kind, backup, len(request["commitment_ids"]))
+            if kind != "pickup":
+                responsibilities[-1] += (" Backup permission required; unresolved." if backup
+                                         else " No eligible untried helper; unresolved.")
         accepted = {c["kind"] for c in self.state["commitments"] if c["id"] in request["commitment_ids"]
                     and c["status"] == "accepted" and (c["kind"] != "pickup" or c["day"] == self.state["day"])
                     and c["for_version"] == expected_version}

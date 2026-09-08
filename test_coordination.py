@@ -656,7 +656,25 @@ def check_memory_and_dated_availability():
             raise AssertionError("Malformed or contradictory continuity state restored")
 
 
+def check_proactive_request_provenance():
+    home = Household(save_path=None)
+    c = home.coordination
+    home.begin_coordination("auto-v2", "Automatic check of a changed hospital notice.", home.revision, initiated_by="coordinator")
+    assert c.state["human_interactions"] == dict.fromkeys(("resident", "alex", "morgan"), 0)
+    assert c.state["history"][-1]["actor"] == "coordinator"
+    assert c.state["history"][-1]["event"] == "proactive_request"
+    before = c.dump()
+    assert home.begin_coordination("auto-v2", "Automatic check of a changed hospital notice.", home.revision, initiated_by="coordinator")["duplicate"]
+    assert c.dump() == before
+    reject(home, lambda: c.begin("invalid-source", "Request", initiated_by="alex"))
+    reject(home, lambda: home.begin_coordination("invalid-source", "Request", home.revision, initiated_by=True))
+    home.begin_coordination("resident", "Please arrange the visit.", home.revision)
+    assert c.state["human_interactions"]["resident"] == 1
+    assert c.state["history"][-1]["actor"] == "resident" and c.state["history"][-1]["event"] == "request"
+
+
 if __name__ == "__main__":
+    check_proactive_request_provenance()
     check_supply_and_continuity()
     check_rejection_cancellation_and_restore()
     check_reported_order_summaries()

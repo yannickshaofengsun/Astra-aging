@@ -386,7 +386,47 @@ def check_dated_visit_continuity():
     assert arranged.hospital.state["commitments"] == agreements, "Arranged is not attended; future agreements remain current"
 
 
+def check_available_requests_only():
+    def availability(host, actor, available, on_date="2026-09-17"):
+        host.coordination.apply("coordination_set_availability", "family",
+            {"actor_id": actor, "start_date": on_date, "end_date": on_date, "available": available}, actor)
+
+    host = fresh()
+    availability(host, "alex", False)
+    request(host, "eligible-backup")
+    assert len(host.hospital.state["commitments"]) == 3
+    assert all(c["actor_id"] == "morgan" and c["status"] == "requested" for c in host.hospital.state["commitments"])
+    driver = next(c for c in host.hospital.state["commitments"] if c["kind"] == "driver")
+    reply(host, driver, "declined")
+    run(host, "eligible-backup")
+    assert len(host.hospital.state["commitments"]) == 3, "A decline must not re-request the known-unavailable primary"
+    assert "No eligible untried helper; unresolved" in host.hospital.state["requests"]["eligible-backup"]["result"]
+
+    for no_permission in (False, True):
+        blocked = fresh()
+        availability(blocked, "alex", False)
+        if no_permission:
+            blocked.hospital.apply("hospital_permissions", "resident", {"backup_requests": False})
+        else:
+            availability(blocked, "morgan", False)
+        request(blocked, "uncovered")
+        assert not blocked.hospital.state["commitments"]
+        assert "unresolved" in blocked.hospital.state["requests"]["uncovered"]["result"]
+        before = blocked.hospital.dump()
+        run(blocked, "uncovered")
+        assert blocked.hospital.dump() == before, "Waiting must not repeat task creation"
+
+    pickup = fresh()
+    availability(pickup, "alex", False, "2026-09-15")
+    request(pickup, "pickup-backup", "prescription_refill")
+    pickup.hospital.apply("hospital_publish_pharmacy", "resident", {"status": "ready"})
+    run(pickup, "pickup-backup")
+    assert len(pickup.hospital.state["commitments"]) == 1
+    assert pickup.hospital.state["commitments"][0]["actor_id"] == "morgan"
+
+
 if __name__ == "__main__":
+    check_available_requests_only()
     check_visit()
     check_refill()
     check_failures()

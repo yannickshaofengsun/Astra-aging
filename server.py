@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import astra_bridge
 from imessage_bridge import Bridge as MessagesBridge
+from proactive import VisitWatcher
 from simulation import Household, InvalidAction
 
 ROOT = Path(__file__).resolve().parent
@@ -59,6 +60,7 @@ class Server(ThreadingHTTPServer):
         self.coordination_gate = threading.Lock()
         self.messages = MessagesBridge(messages_config, self_test=messages_self_test)
         self.messages_poll_status = {'status': 'disabled', 'blocker': ''}
+        self.proactive = VisitWatcher(self)
         super().__init__(('127.0.0.1', port), Handler)
 
     def poll_messages(self, stop):
@@ -87,7 +89,7 @@ class Server(ThreadingHTTPServer):
             request = next((r for r in state['coordination']['requests'] if r['id'] == request_id), None)
             return status, {'state': state, 'request': request, 'engine': astra_bridge.MODEL, **details}
 
-    def coordinate(self, data, intake=True):
+    def coordinate(self, data, intake=True, *, proactive=None):
         required = {'role', 'revision', 'request_id'} | ({'message'} if intake else set())
         allowed = required | ({'replace_request_id'} if intake else set())
         if (not required <= set(data) <= allowed or data['role'] != 'resident' or
@@ -100,6 +102,8 @@ class Server(ThreadingHTTPServer):
         if intake and (type(data['message']) is not str or not data['message'].strip() or len(data['message']) > 2000):
             raise RequestError(400, 'Message must contain 1–2000 characters.')
         household, request_id = self.household, data['request_id']
+        if proactive is None and request_id.startswith('proactive-') and intake:
+            raise RequestError(400, 'That request identifier is reserved for automatic visit checks.')
         with self.state_lock:
             state = household.view('resident')
             if intake and any(r['id'] == request_id for r in state['coordination']['requests']):
@@ -113,9 +117,16 @@ class Server(ThreadingHTTPServer):
         try:
             if intake:
                 with self.state_lock:
-                    household.begin_coordination(request_id, data['message'], data['revision'], data.get('replace_request_id'))
+                    household.begin_coordination(request_id, data['message'], data['revision'], data.get('replace_request_id'),
+                                                 initiated_by='coordinator' if proactive is not None else 'resident')
                     started = True
+                    if (proactive is not None and household.save_path is not None
+                            and household.mission_persistence['status'] != 'saved'):
+                        raise InvalidAction('The automatic request could not be saved; no model call or actions were started.')
                     context = household.coordination_context(request_id)
+                    if proactive is not None:
+                        context['proactive_notice'] = {key: proactive[key] for key in
+                            ('notice', 'availability_on_visit_date', 'previous_helpers')}
                 proposal = astra_bridge.interpret_request(context, data['message'])
                 with self.state_lock:
                     try:
@@ -126,13 +137,24 @@ class Server(ThreadingHTTPServer):
                         household.fail_coordination(request_id, 'The request context changed. Review it before retrying.')
                         return self.coordination_response(request_id, 409)
                     try:
+                        if proactive is not None:
+                            self.proactive.validate(proposal, proactive)
                         household.accept_coordination(request_id, proposal, context['version'])
-                    except InvalidAction as exc:
+                    except (InvalidAction, ValueError) as exc:
                         household.fail_coordination(request_id, str(exc))
                         encoded = json.dumps(proposal, ensure_ascii=False).encode()
                         interpretation = (proposal if len(encoded) <= 8192 else
                             {'truncated': True, 'json_prefix': encoded[:8192].decode('utf-8', errors='ignore')})
                         return self.coordination_response(request_id, 400, interpretation=interpretation)
+                    if proactive is not None:
+                        # Validation and bounded local effects are atomic with respect to new notices and revocation.
+                        for _ in range(12):
+                            if (household.save_path is not None
+                                    and household.mission_persistence['status'] != 'saved'):
+                                return self.coordination_response(request_id, 503, error='Automatic work stopped because the household could not be saved.')
+                            if not household.advance_coordination(request_id):
+                                break
+                        return self.coordination_response(request_id)
             else:
                 with self.state_lock:
                     household.coordination_context(request_id)
@@ -216,10 +238,10 @@ class Server(ThreadingHTTPServer):
             return notices
 
     def send_changed_updates(self, before):
-        """Called only after explicit processing, never on startup, GET, or clock ticks."""
+        """Send after addressed task processing or an authorized visit check, never a GET."""
         changed = [(key, text) for key, text in self.message_snapshot().items() if before.get(key) != text]
         results = []
-        # ponytail: at most 25 addressed updates per explicit operation; no background sender.
+        # ponytail: at most 25 addressed updates per processing pass for this single household.
         for key, text in changed[:25]:
             with self.state_lock:
                 if (not self.messages.config or not self.messages.config['enabled'] or
@@ -428,6 +450,17 @@ class Handler(BaseHTTPRequestHandler):
             elif not post and target.path == '/api/messages/readiness' and not target.query:
                 self.respond(200, {**self.server.messages.readiness(),
                                    'automatic_poll': self.server.messages_poll_status})
+            elif not post and target.path == '/api/proactive' and not target.query:
+                self.respond(200, self.server.proactive.view())
+            elif post and target.path == '/api/proactive' and not target.query:
+                data = self.body()
+                if (set(data) != {'role', 'revision', 'enabled'} or data['role'] != 'resident'
+                        or type(data['revision']) is not int or type(data['enabled']) is not bool):
+                    raise RequestError(400, 'Supply the resident role, current revision and watch preference.')
+                with self.server.state_lock:
+                    if data['revision'] != self.server.household.revision:
+                        raise RequestError(409, 'The household changed. Refresh before changing visit monitoring.')
+                    self.respond(200, self.server.proactive.set_enabled(data['enabled']))
             elif not post and target.path == '/api/health' and not target.query:
                 self.respond(200, {'status': 'ok', 'engine': astra_bridge.MODEL,
                                   'cli_available': Path(astra_bridge.CODEX).is_file(),
@@ -580,6 +613,8 @@ if __name__ == '__main__':
                 messages_self_test=args.messages_self_test) as server:
         stop = threading.Event()
         receiver = threading.Thread(target=server.poll_messages, args=(stop,)) if args.messages_poll else None
+        watcher = threading.Thread(target=server.proactive.run, args=(stop,))
+        watcher.start()
         if receiver:
             receiver.start()
         print('CareAnchor: http://127.0.0.1:8765', flush=True)
@@ -589,5 +624,6 @@ if __name__ == '__main__':
             pass
         finally:
             stop.set()
+            watcher.join()
             if receiver:
                 receiver.join()  # Finish the current bounded intake before closing; schedule no further polls.

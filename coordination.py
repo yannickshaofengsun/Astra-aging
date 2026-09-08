@@ -311,7 +311,9 @@ class Coordination:
             raise ValueError("Choose the resident, Alex, or Morgan perspective.")
         return actor_id or "alex"
 
-    def begin(self, request_id, text, replace_request_id=None):
+    def begin(self, request_id, text, replace_request_id=None, *, initiated_by="resident"):
+        if type(initiated_by) is not str or initiated_by not in ("resident", "coordinator"):
+            raise ValueError("Only a resident request or an internal coordinator event may start coordination.")
         if not isinstance(request_id, str) or not ID.fullmatch(request_id):
             raise ValueError("Use a unique request ID of at most 48 letters, numbers, underscores, or dashes.")
         if not isinstance(text, str) or not text.strip() or len(text) > 2000:
@@ -334,7 +336,10 @@ class Coordination:
             self._cancel(previous, "superseded")
         request = _request(request_id, text.strip(), self.day, self.host.week.appointment_version, replace_request_id)
         self.state["requests"].append(request)
-        self._touch("resident", "correction" if previous else "request", "Resident corrected a request." if previous else "Resident made a household request.")
+        if initiated_by == "coordinator":
+            self._touch("coordinator", "proactive_request", "Coordinator started a request after a household event.")
+        else:
+            self._touch("resident", "correction" if previous else "request", "Resident corrected a request." if previous else "Resident made a household request.")
         return {"request": deepcopy(request), "duplicate": False}
 
     def context(self, request_id):

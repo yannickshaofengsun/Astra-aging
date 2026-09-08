@@ -133,7 +133,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 </section>
 <details id="assessment-panel" class="assessment-panel"><summary>Your equipment plan</summary><div id="assessment-summary"></div><aside id="assessment-preview" hidden><div class="assessment-preview-heading"><h3>See it in your home</h3><label><input id="assessment-preview-toggle" type="checkbox">Show proposed cart</label></div><img id="assessment-preview-image" alt=""><p id="assessment-preview-note" class="detail"></p><p id="assessment-preview-error" class="detail" role="status"></p><div id="assessment-preview-links" class="assessment-actions"></div></aside><div id="assessment-body"></div></details>
 
-<details id="hospital-panel" class="assessment-panel"><summary>Hospital, travel and prescription arrangements</summary><div id="hospital-body"></div></details>
+<details id="hospital-panel" class="assessment-panel"><summary>Hospital, travel and prescription arrangements</summary><section id="proactive-visit" class="assessment-item" aria-labelledby="proactive-title" hidden><h3 id="proactive-title">CareAnchor watches for changes</h3><label class="permission"><input id="proactive-enabled" type="checkbox" aria-describedby="proactive-note"><span>Watch visit changes</span></label><p id="proactive-status" role="status" aria-live="polite"></p><p id="proactive-detail" class="detail"></p><p id="proactive-error" class="detail" role="alert" hidden></p><p id="proactive-note" class="detail">Monitor the fictional hospital source while this local service is running. Your hospital permissions still apply. Helpers must accept their own responsibilities.</p><div id="proactive-trigger" class="daily-actions"></div><p class="detail">Turn on watching, then simulate a hospital update. CareAnchor checks the arrangements without another request.</p></section><div id="hospital-body"></div></details>
 <details id="continuity-panel" class="assessment-panel" hidden><summary>Remembered preferences &amp; availability</summary><p id="continuity-error" class="detail" role="alert" hidden></p><div id="continuity-body"></div></details>
 <details id="family-edition-panel" class="assessment-panel" hidden>
   <summary>Family news on paper</summary>
@@ -459,7 +459,7 @@ function renderChat(){
   $('pending').hidden=!c.pending;$('chat-error').textContent=c.error;$('chat-error').hidden=!c.error;$('send').disabled=c.pending||changing||!state;
   $('messages').scrollTop=$('messages').scrollHeight;
 }
-async function loadState(clearError=true){const request=++stateRequest,selected=role,actor=actorId;try{const view=await api(stateURL(selected,actor));if(request!==stateRequest||selected!==role||actor!==actorId)return;if(state&&view.context_revision===state.context_revision&&view.revision<state.revision)return;acceptState(view);if(clearError)globalError('');renderPlan();renderChat();return view;}catch(e){if(request!==stateRequest)return;globalError(errorText(e));$('plan-status').textContent='Unavailable';}}
+async function loadState(clearError=true){const request=++stateRequest,selected=role,actor=actorId;try{const view=await api(stateURL(selected,actor));if(request!==stateRequest||selected!==role||actor!==actorId)return;if(state&&view.context_revision===state.context_revision&&view.revision<state.revision)return;acceptState(view);if(clearError)globalError('');renderPlan();renderChat();if(proactiveSupported!==false||clearError)loadProactive();return view;}catch(e){if(request!==stateRequest)return;globalError(errorText(e));$('plan-status').textContent='Unavailable';}}
 function switchRole(next,nextActor=actorId){if(!['resident','family'].includes(next)||!['alex','morgan'].includes(nextActor))return;if(next===role&&nextActor===actorId)return;chatChannel().draft=$('message').value;dailyDrafts[role==='resident'?'resident':actorId]=$('daily-message').value;stopVoiceContext();dailyError='';role=next;actorId=nextActor;$('daily-message').value=dailyDrafts[role==='resident'?'resident':actorId]||'';state=null;dailySignature='';++stateRequest;document.querySelectorAll('[data-role]').forEach(b=>{const selected=b.dataset.role===role;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;});$('conversation').setAttribute('aria-labelledby',`${role}-tab`);$('messages').setAttribute('aria-label',`${role==='resident'?'Resident':readable(actorId)} conversation`);$('channel-note').textContent=role==='resident'?'Resident conversation · Your appointment reason stays in this perspective.':`${readable(actorId)} conversation · Shared logistics only. Separate conversation history.`;$('message').value=chatChannel().draft;$('message').placeholder=role==='resident'?'What’s the plan for my appointment?':'What time is the pickup?';renderPlan();
 renderChat();loadState();}
 async function act(action,payload){if(!state||changing)return;const selected=role,actor=actorId,revision=state.revision;changing=true;++epoch;++stateRequest;missionError='';for(const c of Object.values(channels))c.pending=false;renderPlan();renderChat();try{const view=await api('/api/event',{role:selected,...(selected==='family'?{actor_id:actor}:{}),action,revision,...(payload===undefined?{}:{payload})});if(['reset','select_demo','select_sketch'].includes(action))clearConversations();if(selected===role&&actor===actorId&&(!state||view.revision>=state.revision)){++stateRequest;acceptState(view);}globalError('');}catch(e){globalError(errorText(e));}finally{changing=false;renderPlan();renderChat();await loadState(false);}}
@@ -767,10 +767,31 @@ async function submitFamilyReply(message){
   catch(error){if(familyReplyJob===job&&role===selected&&actorId===actor&&sameDailyContext(context)){dailyReceive(error.data?.state,selected,actor,context);dailyError=errorText(error);if(!$('daily-message').value)$('daily-message').value=message;}}
   finally{if(familyReplyJob===job){familyReplyBusy=false;familyReplyJob=null;await loadState(false);renderDaily();}}
 }
+let proactive=null,proactiveSupported=null,proactiveBusy=false,proactivePolling=false,proactiveRead=0,proactiveError='';
+function renderProactive(){
+  $('proactive-visit').hidden=role!=='resident'||proactiveSupported!==true||!state?.hospital;
+  $('proactive-enabled').checked=proactive?.enabled===true;$('proactive-enabled').disabled=proactiveBusy||changing||dailyMutationBusy||!state;
+  const labels={disabled:'Monitoring is off',watching:'Watching for visit changes',waiting_permission:'Your permission is needed',coordinating:'CareAnchor is coordinating the change',waiting_helper:'Waiting for a helper to reply',completed:'Coordination complete',blocked:'The arrangements need attention',failed:'Coordination could not finish'};
+  $('proactive-status').textContent=proactiveBusy?'Updating monitoring…':labels[proactive?.status]||'Checking monitoring status…';
+  $('proactive-detail').textContent=proactive?.detail||'';$('proactive-error').textContent=proactiveError;$('proactive-error').hidden=!proactiveError;
+}
+async function loadProactive(){
+  if(role!=='resident'||proactiveBusy||proactivePolling)return;const request=++proactiveRead;proactivePolling=true;
+  try{const value=await api('/api/proactive');if(request!==proactiveRead)return;proactive=value;proactiveSupported=true;proactiveError='';}
+  catch(error){if(request!==proactiveRead)return;if(error.status===404){proactiveSupported=false;proactive=null;proactiveError='';}else proactiveError='Monitoring status is unavailable. Refresh to check again.';}
+  finally{proactivePolling=false;renderHospital();}
+}
+$('proactive-enabled').addEventListener('change',async event=>{
+  const enabled=event.target.checked;renderProactive();if(role!=='resident'||!state||proactiveBusy||changing||dailyMutationBusy)return;
+  proactiveBusy=true;++proactiveRead;proactiveError='';renderProactive();
+  try{proactive=await api('/api/proactive',{role:'resident',revision:state.revision,enabled});proactiveSupported=true;}
+  catch(error){proactiveError=errorText(error);}
+  finally{proactiveBusy=false;renderProactive();await loadState(false);}
+});
 let hospitalSignature='';
 function renderHospital(){
-  const h=state?.hospital,body=$('hospital-body');$('hospital-panel').hidden=!h;if(!h)return;
-  const signature=JSON.stringify([h,role,actorId]);if(signature===hospitalSignature)return;hospitalSignature=signature;body.replaceChildren();$('workspace-hospital-tools').replaceChildren();body.append(node('p',h.notice,'detail'));
+  renderProactive();const h=state?.hospital,body=$('hospital-body');$('hospital-panel').hidden=!h;if(!h)return;
+  const signature=JSON.stringify([h,role,actorId,proactiveSupported]);if(signature===hospitalSignature)return;hospitalSignature=signature;body.replaceChildren();$('workspace-hospital-tools').replaceChildren();$('proactive-trigger').replaceChildren();body.append(node('p',h.notice,'detail'));
   const visit=h.retrieved_visit;
   if(visit){body.append(node('h3','Retrieved hospital record'),node('p',`${visit.source_id} · Version ${visit.source_version} · ${visit.source_timestamp}`,'detail'));const a=visit.appointment;body.append(node('p',`${planDate(a.date)} · ${a.time} · ${a.location} · Pickup ${a.pickup}`));if(a.purpose&&role==='resident')body.append(node('p',`Resident only: ${a.purpose}`,'private'));if(a.paperwork?.length)body.append(node('p',`Paperwork: ${a.paperwork.join(' · ')}`));}
   else if(role==='resident')body.append(node('p','No hospital record has been retrieved yet. Ask CareAnchor to coordinate the hospital visit.','detail'));
@@ -782,7 +803,7 @@ function renderHospital(){
     const settings=node('details','');settings.append(node('summary','Hospital and pharmacy permissions'));const form=node('form',''),labels={retrieve_records:'Retrieve the supplied records',visit_requests:'Arrange the visit with named helpers',backup_requests:'Ask a backup when someone declines',refill_requests:'Request an existing-prescription refill',pickup_requests:'Ask a helper for pharmacy collection'};
     for(const key of h.permission_fields||[]){const label=node('label','','permission'),input=node('input','');input.type='checkbox';input.name=key;input.checked=h.permissions?.[key]===true;label.append(input,node('span',labels[key]||readable(key)));form.append(label);}
     const save=node('button','Save hospital permissions');save.type='submit';form.append(save);form.addEventListener('submit',async event=>{event.preventDefault();const values=new FormData(form),payload={};for(const key of h.permission_fields)if(values.has(key)!==h.permissions[key])payload[key]=values.has(key);if(Object.keys(payload).length&&await dailyAction('hospital_permissions',payload)){const pending=pendingDailyRequest();if(pending?.status==='waiting_permission')runDailyRequest(pending.id);}});settings.append(form);body.append(settings);
-    for(const control of h.controls||[]){if(control.action==='hospital_resume')dailyButton(body,control);else dailyButton($('workspace-hospital-tools'),control);}
+    for(const control of h.controls||[]){if(control.action==='hospital_resume')dailyButton(body,control);else if(control.action==='hospital_publish_visit'&&proactiveSupported===true)dailyButton($('proactive-trigger'),{...control,label:'Simulate hospital changing the visit'});else dailyButton($('workspace-hospital-tools'),control);}
   }
 }
 

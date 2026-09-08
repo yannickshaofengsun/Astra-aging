@@ -215,13 +215,13 @@ class Household:
         self.revision += 1
         self._persist_mission()
 
-    def begin_coordination(self, request_id, message, expected_revision, replace_request_id=None):
+    def begin_coordination(self, request_id, message, expected_revision, replace_request_id=None, *, initiated_by="resident"):
         with self._lock:
             duplicate = any(item["id"] == request_id for item in self.coordination.view("resident")["requests"])
             if not duplicate and (type(expected_revision) is not int or expected_revision != self.revision):
                 raise InvalidAction("The plan changed. Refresh before starting this request.")
             try:
-                result = self.coordination.begin(request_id, message, replace_request_id)
+                result = self.coordination.begin(request_id, message, replace_request_id, initiated_by=initiated_by)
             except ValueError as error:
                 raise InvalidAction(str(error)) from None
             if not result["duplicate"]:
