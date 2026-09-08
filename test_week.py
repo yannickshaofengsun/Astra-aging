@@ -95,20 +95,71 @@ def check():
     assert home.documents['status'] == 'confirmed'
     assert not control('week_place_supplies', 'family')
     home = Household()
-    act('week_permissions', {'supplies': True, 'supply_cap': 25, 'backup_transport': True})
+    act('week_permissions', {'supplies': True, 'supply_cap': 25})
     act('week_inject', {'scenario': 'supply_unavailable'})
     act('week_permissions', {'supplies': False})
     assert not control('week_run'), 'Revoked permission still allows routine ordering'
     rejects('week_order_supplies')
     act('week_inject', {'scenario': 'driver_decline'})
+    act('week_permissions', {'backup_transport': True})
     available('week_run')
     act('week_helper_availability', {'available': False}, 'family')
     rejects('week_accept_backup', role='family')
     available('week_decline_backup', 'family')
     assert home.transport['status'] == 'declined'
     assert not control('week_request_backup'), 'Helper refusal triggered duplicate requests'
+
+    # Resolve only the missing return leg, preserving the already accepted pickup.
+    for mode in ('manual', 'assisted'):
+        home = Household()
+        act('week_select_profile', {'id': 'couple'})  # Alex outbound; Sam is the available helper.
+        pickup = dict(home.transport)
+        if mode == 'manual':
+            act('week_mode', {'mode': 'manual'})
+            available('week_request_backup')
+        else:
+            assert not control('week_run'), 'Missing return still requires transport permission'
+            act('week_permissions', {'backup_transport': True})
+            available('week_run')
+        assert home.transport == pickup, 'Return request discarded an accepted outbound ride'
+        transport = next(t for t in home.view('family')['week']['tasks'] if t['id'] == 'transport')
+        assert transport['requested_legs'] == ['return']
+        assert 'outbound' not in control('week_accept_backup', 'family')['label']
+        available('week_accept_backup', 'family')
+        assert home.transport == pickup, 'Return acceptance replaced the outbound driver'
+        act('confirm_ride', role='family')
+        transport = next(t for t in home.view('family')['week']['tasks'] if t['id'] == 'transport')
+        assert transport['status'] == 'confirmed' and transport['return_status'] == 'confirmed'
+        assert transport['return_person'] == 'Sam', 'Pickup confirmation erased the return acceptance'
+        act('week_helper_availability', {'available': False}, 'family')
+        assert home.transport == pickup, 'Return helper withdrawal cancelled another driver'
+        assert next(t for t in home.view('resident')['week']['tasks'] if t['id'] == 'transport')['return_status'] == 'declined'
+
+    home = Household()
+    act('week_mode', {'mode': 'manual'})
+    pickup = dict(home.transport)
+    available('week_request_backup')
+    available('week_decline_backup', 'family')
+    assert home.transport == pickup, 'Declining a return-only request cancelled the accepted outbound'
+    rejects('week_accept_backup', role='family')
+    assert not control('week_request_backup'), 'Declined return triggered a duplicate request'
+
+    # Supply approval belongs to the supply permission, not unrelated calendar settings.
+    for change, preserved in (({'calendar': False}, True), ({'supplies': False}, False), ({'supply_cap': 5}, False)):
+        home = Household()
+        act('week_permissions', {'calendar': True, 'supplies': True, 'supply_cap': 10})
+        act('week_inject', {'scenario': 'supply_unavailable'})
+        act('week_choose_supply', {'choice': 'approve'})
+        act('week_permissions', change)
+        supply = next(t for t in home.view('resident')['week']['tasks'] if t['id'] == 'supplies')
+        assert supply['one_time_approval'] is preserved
+        assert bool(control('week_run')) is preserved
+        if preserved:
+            available('week_run')
+            assert next(t for t in home.view('resident')['week']['tasks'] if t['id'] == 'supplies')['status'] == 'ordered'
     print('PASS: week privacy, atomic rejection, current-version acceptance, shared dependencies, '
-          'helper evidence, delivery/placement separation, equipment lifecycle and profile isolation.')
+          'helper evidence, delivery/placement separation, equipment lifecycle, profile isolation, '
+          'independent travel legs and scoped permission changes.')
 
 
 if __name__ == '__main__':

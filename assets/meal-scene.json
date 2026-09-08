@@ -1,0 +1,296 @@
+{
+  "label": "Illustrative meal room",
+  "version": 1,
+  "background": "/assets/meal-room.png",
+  "foreground": "/assets/meal-foreground.png",
+  "width": 1800,
+  "height": 1125,
+  "anchors": {
+    "resident_start": {
+      "x": 0.475747,
+      "y": 0.70657,
+      "world": [
+        0.8,
+        -1.8,
+        0.045
+      ]
+    },
+    "entry": {
+      "x": 0.223057,
+      "y": 0.572319,
+      "world": [
+        -3.4,
+        -2.5,
+        0.045
+      ]
+    },
+    "kitchen_entry": {
+      "x": 0.533007,
+      "y": 0.535365,
+      "world": [
+        0.2,
+        0.6,
+        0.045
+      ]
+    },
+    "pantry": {
+      "x": 0.38882,
+      "y": 0.328375,
+      "world": [
+        -3.2,
+        1.65,
+        0.045
+      ]
+    },
+    "preparation": {
+      "x": 0.496701,
+      "y": 0.412574,
+      "world": [
+        -1.2,
+        1.65,
+        0.045
+      ]
+    },
+    "table_approach": {
+      "x": 0.598773,
+      "y": 0.577698,
+      "world": [
+        1.35,
+        0.7,
+        0.045
+      ]
+    },
+    "table_seat": {
+      "x": 0.64732,
+      "y": 0.615588,
+      "world": [
+        2.25,
+        0.7,
+        0.045
+      ]
+    },
+    "sink": {
+      "x": 0.448155,
+      "y": 0.374685,
+      "world": [
+        -2.1,
+        1.65,
+        0.045
+      ]
+    }
+  },
+  "edges": [
+    [
+      "resident_start",
+      "kitchen_entry"
+    ],
+    [
+      "entry",
+      "kitchen_entry"
+    ],
+    [
+      "kitchen_entry",
+      "pantry"
+    ],
+    [
+      "pantry",
+      "preparation"
+    ],
+    [
+      "preparation",
+      "kitchen_entry"
+    ],
+    [
+      "kitchen_entry",
+      "table_approach"
+    ],
+    [
+      "table_approach",
+      "table_seat"
+    ],
+    [
+      "kitchen_entry",
+      "sink"
+    ]
+  ],
+  "object_anchors": {
+    "pantry": {
+      "x": 0.408758,
+      "y": 0.221526
+    },
+    "preparation": {
+      "x": 0.532136,
+      "y": 0.287081
+    },
+    "table_seat": {
+      "x": 0.619686,
+      "y": 0.602116
+    },
+    "sink": {
+      "x": 0.485498,
+      "y": 0.244229
+    },
+    "table_approach": {
+      "x": 0.619686,
+      "y": 0.602116
+    }
+  },
+  "directions": {
+    "south": {
+      "x": -0.037343,
+      "y": 0.060811
+    },
+    "east": {
+      "x": 0.053941,
+      "y": 0.0421
+    },
+    "north": {
+      "x": 0.037344,
+      "y": -0.06081
+    },
+    "west": {
+      "x": -0.05394,
+      "y": -0.042099
+    }
+  },
+  "actors": {
+    "resident": {
+      "width": 0.103095,
+      "height": 0.230932,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.749973
+      },
+      "poses": {
+        "idle": {
+          "south": "/assets/meal-sprites/resident-idle-south.png",
+          "east": "/assets/meal-sprites/resident-idle-east.png",
+          "north": "/assets/meal-sprites/resident-idle-north.png",
+          "west": "/assets/meal-sprites/resident-idle-west.png"
+        },
+        "walk_a": {
+          "south": "/assets/meal-sprites/resident-walk_a-south.png",
+          "east": "/assets/meal-sprites/resident-walk_a-east.png",
+          "north": "/assets/meal-sprites/resident-walk_a-north.png",
+          "west": "/assets/meal-sprites/resident-walk_a-west.png"
+        },
+        "walk_b": {
+          "south": "/assets/meal-sprites/resident-walk_b-south.png",
+          "east": "/assets/meal-sprites/resident-walk_b-east.png",
+          "north": "/assets/meal-sprites/resident-walk_b-north.png",
+          "west": "/assets/meal-sprites/resident-walk_b-west.png"
+        },
+        "carry": {
+          "south": "/assets/meal-sprites/resident-carry-south.png",
+          "east": "/assets/meal-sprites/resident-carry-east.png",
+          "north": "/assets/meal-sprites/resident-carry-north.png",
+          "west": "/assets/meal-sprites/resident-carry-west.png"
+        },
+        "carry_walk_a": {
+          "south": "/assets/meal-sprites/resident-carry_walk_a-south.png",
+          "east": "/assets/meal-sprites/resident-carry_walk_a-east.png",
+          "north": "/assets/meal-sprites/resident-carry_walk_a-north.png",
+          "west": "/assets/meal-sprites/resident-carry_walk_a-west.png"
+        },
+        "carry_walk_b": {
+          "south": "/assets/meal-sprites/resident-carry_walk_b-south.png",
+          "east": "/assets/meal-sprites/resident-carry_walk_b-east.png",
+          "north": "/assets/meal-sprites/resident-carry_walk_b-north.png",
+          "west": "/assets/meal-sprites/resident-carry_walk_b-west.png"
+        },
+        "seated": {
+          "south": "/assets/meal-sprites/resident-seated-south.png"
+        },
+        "eating": {
+          "south": "/assets/meal-sprites/resident-eating-south.png"
+        }
+      }
+    },
+    "helper": {
+      "width": 0.103095,
+      "height": 0.230932,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.749973
+      },
+      "poses": {
+        "idle": {
+          "south": "/assets/meal-sprites/helper-idle-south.png",
+          "east": "/assets/meal-sprites/helper-idle-east.png",
+          "north": "/assets/meal-sprites/helper-idle-north.png",
+          "west": "/assets/meal-sprites/helper-idle-west.png"
+        },
+        "walk_a": {
+          "south": "/assets/meal-sprites/helper-walk_a-south.png",
+          "east": "/assets/meal-sprites/helper-walk_a-east.png",
+          "north": "/assets/meal-sprites/helper-walk_a-north.png",
+          "west": "/assets/meal-sprites/helper-walk_a-west.png"
+        },
+        "walk_b": {
+          "south": "/assets/meal-sprites/helper-walk_b-south.png",
+          "east": "/assets/meal-sprites/helper-walk_b-east.png",
+          "north": "/assets/meal-sprites/helper-walk_b-north.png",
+          "west": "/assets/meal-sprites/helper-walk_b-west.png"
+        },
+        "carry": {
+          "south": "/assets/meal-sprites/helper-carry-south.png",
+          "east": "/assets/meal-sprites/helper-carry-east.png",
+          "north": "/assets/meal-sprites/helper-carry-north.png",
+          "west": "/assets/meal-sprites/helper-carry-west.png"
+        },
+        "carry_walk_a": {
+          "south": "/assets/meal-sprites/helper-carry_walk_a-south.png",
+          "east": "/assets/meal-sprites/helper-carry_walk_a-east.png",
+          "north": "/assets/meal-sprites/helper-carry_walk_a-north.png",
+          "west": "/assets/meal-sprites/helper-carry_walk_a-west.png"
+        },
+        "carry_walk_b": {
+          "south": "/assets/meal-sprites/helper-carry_walk_b-south.png",
+          "east": "/assets/meal-sprites/helper-carry_walk_b-east.png",
+          "north": "/assets/meal-sprites/helper-carry_walk_b-north.png",
+          "west": "/assets/meal-sprites/helper-carry_walk_b-west.png"
+        }
+      }
+    }
+  },
+  "props": {
+    "full": {
+      "image": "/assets/meal-dish-full.png",
+      "width": 0.042644,
+      "height": 0.051172,
+      "pivot": {
+        "x": 0.499999,
+        "y": 0.499997
+      }
+    },
+    "used": {
+      "image": "/assets/meal-dish-used.png",
+      "width": 0.042644,
+      "height": 0.051172,
+      "pivot": {
+        "x": 0.499999,
+        "y": 0.499997
+      }
+    }
+  },
+  "limitations": "Separate authored meal-room inset, not measured supplied-sketch geometry. Paths avoid display obstacles only. Actor actions and objects depict server-authorized fictional facts, not observed real eating or physical capability.",
+  "foreground_contract": "Layer background, actors/carried props, dining-table foreground, then stationary table/counter props. Authored table paths approach from north/left; seated upper body remains above tabletop. Preserve full image aspect and normalized root pivots.",
+  "carried_offset": {
+    "south": {
+      "x": -0.013443,
+      "y": -0.052594
+    },
+    "east": {
+      "x": 0.019419,
+      "y": -0.05933
+    },
+    "north": {
+      "x": 0.013444,
+      "y": -0.096378
+    },
+    "west": {
+      "x": -0.019418,
+      "y": -0.089642
+    }
+  }
+}

@@ -9,3 +9,6 @@ blender/*.log
 .env
 .env.*
 !.env.example
+output/
+outputs/
+tmp/

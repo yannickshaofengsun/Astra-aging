@@ -1,16 +1,16 @@
-# YC aging companies and Astra's working positioning
+# YC aging companies and CareAnchor's working positioning
 
-Sources checked 2026-09-08. Product descriptions below come from YC profiles and company websites; the proposed offer and lessons are our interpretation. This is a selected comparison, not an exhaustive market map or proof of demand for Astra.
+Sources checked 2026-09-08. Product descriptions below come from YC profiles and company websites; the proposed offer and lessons are our interpretation. This is a selected comparison, not an exhaustive market map or proof of demand for CareAnchor.
 
 ## Working direction
 
-Astra is a home and care concierge whose primary outcome is reducing unpaid family care and coordination time, beginning with administration. It helps older adults and their families arrange everyday support and complete care-related tasks. Its home simulation makes the existing dwelling, possible adaptations, and related equipment tangible. The longer-term payer hypothesis is fewer avoidable care breakdowns and lower claims and care costs, after the cost of delivering the service.
+CareAnchor is a home and care concierge whose primary outcome is reducing unpaid family care and coordination time, beginning with administration. It helps older adults and their families arrange everyday support and complete care-related tasks. Its home simulation makes the existing dwelling, possible adaptations, and related equipment tangible. The longer-term payer hypothesis is fewer avoidable care breakdowns and lower claims and care costs, after the cost of delivering the service.
 
 An established category is acceptable. We can improve the experience, execution, offer, and distribution without inventing a wholly new category. Existing services are useful evidence of a market and established workflows; they do not establish our own performance. GPT-6 and agents should earn their place through better context transfer, permitted task execution, and recovery when plans change.
 
 ## Relevant YC companies
 
-| Company and YC batch | Current offer | Lesson for Astra |
+| Company and YC batch | Current offer | Lesson for CareAnchor |
 | --- | --- | --- |
 | [GoGoGrandparent — Summer 2016](https://www.ycombinator.com/companies/gogograndparent) | [Phone-based concierge](https://www.gogograndparent.com/) for rides, groceries, meals, prescription delivery, and home services. | Make support accessible through familiar interaction and follow requests through completion. |
 | [Papa — Summer 2018](https://www.ycombinator.com/companies/papa) | [Human companions](https://www.papa.com/) provide everyday help, transport, and companionship through participating health plans/employers and a direct-pay option. | Agents still need real people and service capacity to fulfill physical tasks. Health-plan funding has an existing precedent. |
@@ -35,7 +35,7 @@ For the hackathon, extend the existing home-comfort scenario with one illustrati
 
 ## What supports the insurer-cost hypothesis
 
-[Papa's published analysis](https://resources.papa.com/hubfs/Research/Power%20of%20Pals%202024_.pdf) reports 9% lower medical costs among 2,386 Medicare Advantage members with at least one visit, using risk-normalized claims for eight months before and after engagement. This is vendor-published observational evidence, not a randomized estimate that can be transferred to Astra.
+[Papa's published analysis](https://resources.papa.com/hubfs/Research/Power%20of%20Pals%202024_.pdf) reports 9% lower medical costs among 2,386 Medicare Advantage members with at least one visit, using risk-normalized claims for eight months before and after engagement. This is vendor-published observational evidence, not a randomized estimate that can be transferred to CareAnchor.
 
 The [CMS Accountable Health Communities final evaluation](https://www.cms.gov/priorities/innovation/data-and-reports/2026/ahc-final-report-exec-sum) provides stronger evidence for navigation in a defined high-need population. One track randomized referral plus navigation against referral alone; another used a nonrandomized design. CMS reports over $200 million in combined net savings across tracks and Medicare/Medicaid populations. That total is not wholly a randomized effect, and the program was broader than an older-adult home concierge.
 

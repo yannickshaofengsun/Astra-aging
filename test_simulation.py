@@ -22,7 +22,7 @@ def check():
     snapshot["transport"]["status"] = "tampered"
     assert home.view("family")["transport"]["status"] == "confirmed"
 
-    changed = home.event("reschedule", "resident")
+    changed = home.event("reschedule", "resident", home.revision)
     assert changed["transport"] == {"status": "needs_confirmation", "person": None, "for_date": None}
     assert changed["plan_status"] == "needs_attention"
     rejects(lambda: home.event("confirm_ride", "family", 0))
@@ -35,7 +35,7 @@ def check():
     assert accepted["plan_status"] == "ready"
     assert accepted["transport"]["for_date"] == "2026-09-17"
 
-    moved = home.event("move_documents", "resident")
+    moved = home.event("move_documents", "resident", home.revision)
     assert moved["documents"]["location"] == "Entrance shelf"
     assert moved["documents"]["status"] == "last_known"
     assert "Bedroom drawer" not in json.dumps(home.view("family"))
@@ -48,11 +48,15 @@ def check():
     rejects(lambda: home.view("stranger"))
     rejects(lambda: home.event("send_real_booking", "resident"))
     before_reset = found["revision"]
-    reset = home.event("reset", "resident")
+    rejects(lambda: home.event("reset", "resident", 0))
+    rejects(lambda: home.event("reset", "resident"))
+    rejects(lambda: home.event("reset", "family", home.revision))
+    assert home.view("resident")["revision"] == before_reset
+    reset = home.event("reset", "resident", home.revision)
     assert reset["revision"] > before_reset
     assert reset["appointment"]["date"] == "2026-09-15"
     assert "reason" not in home.view("family")["appointment"]
-    sketch = home.event("select_sketch", "resident")
+    sketch = home.event("select_sketch", "resident", home.revision)
     assert sketch["home"]["id"] == "sketch"
     assert sum(r["use"] == "bedroom" for r in sketch["home"]["rooms"]) == 3
     assert "unmeasured" in sketch["home"]["scale_status"]
@@ -62,8 +66,8 @@ def check():
     assert "/Users/" not in json.dumps(home.view("family"))
     assert "IMG_4043" not in json.dumps(home.view("family"))
     assert "fictional" in sketch["notice"]
-    assert home.event("reset", "resident")["home"]["id"] == "sketch"
-    assert home.event("select_demo", "family")["home"]["id"] == "demo"
+    assert home.event("reset", "resident", home.revision)["home"]["id"] == "sketch"
+    assert home.event("select_demo", "family", home.revision)["home"]["id"] == "demo"
     def play(action, role="resident"):
         return home.event(action, role, home.revision)["outing"]
     assert play("keep_routine")["outcome"] == "staying_home"

@@ -1,0 +1,553 @@
+[
+  {
+    "id": "oxo_jar_opener_1173600",
+    "name": "OXO Good Grips Jar Opener with Base Pad (1173600)",
+    "provider": "OXO online store",
+    "url": "https://www.oxo.com/jar-opener-with-base-pad.html",
+    "source_urls": [
+      "https://www.oxo.com/jar-opener-with-base-pad.html"
+    ],
+    "summary": "Manual opener for someone who wants a better grip when loosening jar lids; the included pad steadies the jar on a counter.",
+    "published_price_cents": 1699,
+    "price_note": "USD item price displayed on the official U.S. product page on 2026-09-08. Tax, shipping, stock and delivered total require rechecking.",
+    "specs": {
+      "model": "1173600",
+      "dimensions_in": [
+        9,
+        5,
+        1
+      ],
+      "material": "Stainless steel",
+      "operation": "Manual twist",
+      "included": "Opener and nonslip base pad"
+    },
+    "fit_checks": [
+      "Confirm which jars and lid sizes are difficult and try the actual lid fit.",
+      "Check whether the person can grip the handle and apply the required twisting force comfortably.",
+      "Confirm a stable, reachable counter surface."
+    ],
+    "limitations": [
+      "Manual operation still requires twisting; this is not an electric opener.",
+      "No verified individual usability, one-handed performance or clinical outcome.",
+      "San Francisco address eligibility, delivery date and shipping charge are unknown."
+    ],
+    "setup_tasks": [
+      "Check the lid fit and delivered price before purchase.",
+      "Place the base pad under the jar and follow the manufacturer's opening instructions.",
+      "Have the resident try their usual jar and choose an accessible storage spot."
+    ],
+    "evidence_note": "Manufacturer product facts and displayed price reviewed. Fit checks are proposed validation steps, not confirmed resident abilities. Public listing only; no purchase or provider contact.",
+    "checked_at": "2026-09-08",
+    "needs": [
+      "easy_grip"
+    ],
+    "kind": "product",
+    "channels": [
+      "online"
+    ],
+    "source_scope": "U.S. online product listing",
+    "location": "U.S. online store; delivery to the destination is unverified",
+    "review_required": false,
+    "unknowns": [
+      "Current stock, exact variant and address-specific delivery",
+      "Current payable total and applicable return terms",
+      "Individual fit, compatibility and resident acceptance"
+    ]
+  },
+  {
+    "id": "vive_sock_assist_lva1067wht",
+    "name": "Vive Sock Assist (LVA1067WHT)",
+    "provider": "Vive Health online store",
+    "url": "https://www.vivehealth.com/products/sock-helper-assist",
+    "source_urls": [
+      "https://www.vivehealth.com/products/sock-helper-assist"
+    ],
+    "summary": "A flexible shell with pull cords to help put on socks when the resident identifies bending or reaching the foot as difficult.",
+    "published_price_cents": 1899,
+    "price_note": "USD sale item price displayed for LVA1067WHT on 2026-09-08; page also shows $21.99 regular price. Tax, shipping and delivered total require rechecking.",
+    "specs": {
+      "model": "LVA1067WHT",
+      "dimensions_in": [
+        9.75,
+        4,
+        3.25
+      ],
+      "opening_width_in": 4,
+      "cord_length_in": 33,
+      "materials": "PVC shell, foam handles and cord",
+      "cord_adjustment": "Can be shortened"
+    },
+    "fit_checks": [
+      "Try the person's actual sock and foot size; published opening width is not proof of fit.",
+      "Check ability to load the sock and pull both cords evenly.",
+      "Check cord length and a stable seated position without assuming individual movement restrictions."
+    ],
+    "limitations": [
+      "Does not establish that the person can load or use the device independently.",
+      "Not a recommendation to wear compression stockings or change prescribed clothing.",
+      "San Francisco address eligibility, delivery date and shipping charge are unknown."
+    ],
+    "setup_tasks": [
+      "Confirm the chosen socks fit the shell and check the delivered price.",
+      "Adjust cord length and follow the manufacturer's loading instructions.",
+      "Observe a trial with the resident's usual sock; arrange setup help only if requested."
+    ],
+    "evidence_note": "Official product specifications and displayed sale price reviewed. Generic shipping claims were not treated as an address-specific delivery commitment. No individual outcome validated.",
+    "checked_at": "2026-09-08",
+    "needs": [
+      "dressing"
+    ],
+    "kind": "product",
+    "channels": [
+      "online"
+    ],
+    "source_scope": "U.S. online product listing",
+    "location": "U.S. online store; delivery to the destination is unverified",
+    "review_required": false,
+    "unknowns": [
+      "Current stock, exact variant and address-specific delivery",
+      "Current payable total and applicable return terms",
+      "Individual fit, compatibility and resident acceptance"
+    ]
+  },
+  {
+    "id": "vive_button_hook_v_lva2051",
+    "name": "Vive Button Hook Model: V (LVA2051)",
+    "provider": "Vive Health online store",
+    "url": "https://www.vivehealth.com/products/button-hook-with-finger-hole",
+    "source_urls": [
+      "https://www.vivehealth.com/products/button-hook-with-finger-hole"
+    ],
+    "summary": "Button loop and zipper hook for a resident who says gripping buttons or zipper tabs is difficult; the handle includes an index-finger opening.",
+    "published_price_cents": 699,
+    "price_note": "USD sale item price displayed for LVA2051 on 2026-09-08; page also shows $15.99 regular price. Tax, shipping and delivered total require rechecking.",
+    "specs": {
+      "model": "LVA2051",
+      "dimensions_in": [
+        8,
+        2,
+        0.65
+      ],
+      "weight_oz": 2.4,
+      "materials": "Steel loop and zipper hook; latex-free composite handle",
+      "handle": "Index-finger opening"
+    },
+    "fit_checks": [
+      "Try the resident's actual buttons, buttonholes and preferred grip.",
+      "The zipper tab needs an opening that accepts the hook.",
+      "Check reach for the garment location; a back zipper may remain inaccessible."
+    ],
+    "limitations": [
+      "Manufacturer's broad button-size claims do not establish fit on every garment.",
+      "One-handed usability and comfortable reach need an individual trial.",
+      "San Francisco address eligibility, delivery date and shipping charge are unknown."
+    ],
+    "setup_tasks": [
+      "Check actual garment compatibility and the delivered price.",
+      "Practice threading the loop through a buttonhole according to the manufacturer's instructions.",
+      "Store near the dressing location chosen by the resident."
+    ],
+    "evidence_note": "Official Model V page reviewed; this is LVA2051, not the differently sized LVA1014 Button Hook. Published facts do not establish individual performance.",
+    "checked_at": "2026-09-08",
+    "needs": [
+      "dressing"
+    ],
+    "kind": "product",
+    "channels": [
+      "online"
+    ],
+    "source_scope": "U.S. online product listing",
+    "location": "U.S. online store; delivery to the destination is unverified",
+    "review_required": false,
+    "unknowns": [
+      "Current stock, exact variant and address-specific delivery",
+      "Current payable total and applicable return terms",
+      "Individual fit, compatibility and resident acceptance"
+    ]
+  },
+  {
+    "id": "vive_suction_reacher_lva1001",
+    "name": "Vive Suction Cup Reacher Grabber (LVA1001, individual)",
+    "provider": "Vive Health online store",
+    "url": "https://www.vivehealth.com/products/grabber-tool",
+    "source_urls": [
+      "https://www.vivehealth.com/products/grabber-tool"
+    ],
+    "summary": "Trigger-operated reacher for retrieving light belongings when the resident identifies a reach problem; suction tips grip the object.",
+    "published_price_cents": 2999,
+    "price_note": "Official page displayed a $29.99 starting sale price on 2026-09-08, with individual and 2-pack options and a $29.99-$34.99 range. Confirm the individual LVA1001 variant and total before purchase; tax and shipping excluded from this snapshot.",
+    "specs": {
+      "model": "LVA1001",
+      "length_in": 32,
+      "jaw_opening_in": 4.5,
+      "published_object_capacity_lb": 5,
+      "frame": "Brushed aluminum",
+      "grip": "Rubber suction tips and trigger handle",
+      "rotating_head": false
+    },
+    "fit_checks": [
+      "Check the actual object's size, shape, surface and weight against the jaws and published limit.",
+      "Try the trigger and required wrist orientation with a light, unbreakable item.",
+      "Check that the target is reachable without destabilizing the resident or pulling an object overhead."
+    ],
+    "limitations": [
+      "Not a weight-bearing aid, walking aid, transfer aid or fall-prevention device.",
+      "The published 5 lb object limit is not a personalized lifting recommendation.",
+      "Head does not rotate; individual handling ability and safe retrieval are unverified.",
+      "San Francisco address eligibility, delivery date and shipping charge are unknown."
+    ],
+    "setup_tasks": [
+      "Verify the individual variant, delivered price and object suitability.",
+      "Inspect the tips and practice on a light unbreakable object at an easy height.",
+      "Choose accessible storage; move frequently used or heavy objects lower if that solves the stated task."
+    ],
+    "evidence_note": "Official product page and SKU reviewed. Manufacturer's capacity is recorded as a specification, not an independently tested safety guarantee. No live inventory or delivery commitment obtained.",
+    "checked_at": "2026-09-08",
+    "needs": [
+      "reach_access"
+    ],
+    "kind": "product",
+    "channels": [
+      "online"
+    ],
+    "source_scope": "U.S. online product listing",
+    "location": "U.S. online store; delivery to the destination is unverified",
+    "review_required": false,
+    "unknowns": [
+      "Current stock, exact variant and address-specific delivery",
+      "Current payable total and applicable return terms",
+      "Individual fit, compatibility and resident acceptance"
+    ]
+  },
+  {
+    "id": "ottlite-mg013hf",
+    "name": "OttLite 4-inch Hands-Free LED Magnifier (MG013HF)",
+    "provider": "OttLite",
+    "url": "https://ottlite.com/products/4-inch-hands-free-led-magnifier",
+    "source_urls": [
+      "https://ottlite.com/products/4-inch-hands-free-led-magnifier",
+      "https://ottlite.com/cdn/shop/files/MG013HF_LED_Hands-Free_Magnifier_Instructions.pdf?v=3586688178482697879"
+    ],
+    "summary": "Illuminated magnifier for a person who requests help seeing print while keeping both hands available.",
+    "published_price_cents": 2999,
+    "price_note": "Manufacturer displayed USD 29.99; tax, shipping and address-specific availability unverified.",
+    "specs": {
+      "model": "MG013HF",
+      "lens": "4-inch acrylic; 1.5x with 4.25x spot viewer",
+      "power": "3 AAA batteries",
+      "support": "Adjustable neck cord and rubberized feet"
+    },
+    "fit_checks": [
+      "Try the user's actual print size, working distance and seated posture.",
+      "Confirm the cord is comfortable and controls/battery compartment are usable.",
+      "Confirm battery inclusion: page and manual disagree."
+    ],
+    "limitations": [
+      "The 4.25x magnification covers a small spot, not the entire lens.",
+      "LED brightness drops as batteries discharge.",
+      "Manufacturer warns against leaving the lens in direct sunlight."
+    ],
+    "setup_tasks": [
+      "Check delivered total and battery inclusion.",
+      "Install batteries and adjust cord over a stable reading surface.",
+      "Test actual reading task; choose a storage place away from sunlight."
+    ],
+    "evidence_note": "Product page and manufacturer manual reviewed. Page says batteries included; linked manual says not included. No user-fit or reading-outcome trial performed.",
+    "checked_at": "2026-09-08",
+    "needs": [
+      "reading"
+    ],
+    "kind": "product",
+    "channels": [
+      "online"
+    ],
+    "source_scope": "U.S. online product listing",
+    "location": "U.S. online store; delivery to the destination is unverified",
+    "review_required": false,
+    "unknowns": [
+      "Current stock, exact variant and address-specific delivery",
+      "Current payable total and applicable return terms",
+      "Individual fit, compatibility and resident acceptance"
+    ]
+  },
+  {
+    "id": "serene-hd40p",
+    "name": "Serene HD-40P Amplified Big Button Landline Phone With Photo Buttons",
+    "provider": "Serene Innovations",
+    "url": "https://www.sereneinnovations.com/products/high-definition-amplified-speakerphone-with-photo-memory",
+    "source_urls": [
+      "https://www.sereneinnovations.com/products/high-definition-amplified-speakerphone-with-photo-memory"
+    ],
+    "summary": "Corded phone for a person requesting larger dialing controls, photo shortcuts or adjustable call volume.",
+    "published_price_cents": 12995,
+    "price_note": "Manufacturer displayed USD 129.95 sale price; tax, shipping and fulfillment unconfirmed.",
+    "specs": {
+      "model": "HD-40P",
+      "photo_buttons": 9,
+      "amplification": "0-15 dB off; 15-26 dB on, measured at 2.8 kHz/Tone 4",
+      "ringer": "85 dB claim; three volume levels and visual flasher",
+      "power": "Telephone-line powered",
+      "connection": "Analog telephone line required"
+    },
+    "fit_checks": [
+      "Confirm active analog-line compatibility and ongoing telephone-service cost.",
+      "Check handset comfort, button visibility and comfortable volume with the user.",
+      "Confirm who the user wants on photo shortcuts."
+    ],
+    "limitations": [
+      "Not a standalone mobile phone; digital/VoIP compatibility is not assured.",
+      "Telephone service remains necessary; line power is not a guarantee of operation during a service outage.",
+      "No monitored emergency-response service is specified."
+    ],
+    "setup_tasks": [
+      "Verify line compatibility and delivered cost.",
+      "Connect line/handset, program agreed shortcuts and set volume conservatively.",
+      "With consent, arrange an incoming/outgoing test call."
+    ],
+    "evidence_note": "Manufacturer specifications and FAQ reviewed. Rendered page shows both Sold out and Add to cart; availability unknown. Match by stated access need, not age or diagnosis.",
+    "checked_at": "2026-09-08",
+    "needs": [
+      "phone_access"
+    ],
+    "kind": "product",
+    "channels": [
+      "online"
+    ],
+    "source_scope": "U.S. online product listing",
+    "location": "U.S. online store; delivery to the destination is unverified",
+    "review_required": false,
+    "unknowns": [
+      "Current stock, exact variant and address-specific delivery",
+      "Current payable total and applicable return terms",
+      "Individual fit, compatibility and resident acceptance"
+    ]
+  },
+  {
+    "id": "dayclocks-digital-8-black",
+    "name": "DayClocks Digital DayClock, 8-inch Display with Black Frame",
+    "provider": "DayClocks",
+    "url": "https://dayclocks.com/products/digital-dayclock-8-display-with-black-frame",
+    "source_urls": [
+      "https://dayclocks.com/products/digital-dayclock-8-display-with-black-frame"
+    ],
+    "summary": "Large day/date/time display for a person who wants that information visible or spoken on demand.",
+    "published_price_cents": 4995,
+    "price_note": "Manufacturer displayed USD 49.95 and states U.S. shipping/sales tax included; exact order availability unconfirmed.",
+    "specs": {
+      "display": "8-inch; four display formats; eight languages",
+      "dimensions_inches": "9 x 6.5",
+      "placement": "Tabletop or wall",
+      "controls": "Remote control; spoken day/time on button press",
+      "power": "5-foot power cable; internal settings memory",
+      "dimming": "Automatic nighttime dimming, 7 pm-7 am"
+    },
+    "fit_checks": [
+      "Test readability at the intended viewing distance and angle.",
+      "Confirm preferred language, display format and spoken-time controls.",
+      "Locate an outlet with safe cable routing."
+    ],
+    "limitations": [
+      "Settings memory does not establish battery-powered display operation during an outage.",
+      "A day/date display does not establish treatment, adherence or behavioral improvement.",
+      "No monitored emergency or remote-care service is specified."
+    ],
+    "setup_tasks": [
+      "Confirm fulfillment, return terms and mounting choice.",
+      "Place securely, route power, set date/time/language and agreed alarms.",
+      "Have the user try the display and remote from their normal location."
+    ],
+    "evidence_note": "Manufacturer page reviewed. Both Sold out and Add to cart appear in rendered text; stock unknown. No clinical benefit or user acceptance inferred.",
+    "checked_at": "2026-09-08",
+    "needs": [
+      "daily_orientation"
+    ],
+    "kind": "product",
+    "channels": [
+      "online"
+    ],
+    "source_scope": "U.S. online product listing",
+    "location": "U.S. online store; delivery to the destination is unverified",
+    "review_required": false,
+    "unknowns": [
+      "Current stock, exact variant and address-specific delivery",
+      "Current payable total and applicable return terms",
+      "Individual fit, compatibility and resident acceptance"
+    ]
+  },
+  {
+    "id": "jasco-ge-26140",
+    "name": "GE UltraBrite Motion Activated LED Night Light, Bronze (26140)",
+    "provider": "Jasco",
+    "url": "https://byjasco.com/products/ge-ultrabrite-motion-activated-led-night-light-bronze",
+    "source_urls": [
+      "https://byjasco.com/products/ge-ultrabrite-motion-activated-led-night-light-bronze"
+    ],
+    "summary": "Plug-in light for a person who requests automatic illumination in a dark indoor household area.",
+    "published_price_cents": 1399,
+    "price_note": "Manufacturer displayed USD 13.99 for one bronze light; delivered total and address-specific fulfillment unverified.",
+    "specs": {
+      "model": "26140",
+      "output_lumens": 40,
+      "motion_range_feet": "Up to 25",
+      "auto_off_seconds": 90,
+      "activation": "Motion in low light",
+      "power": "Plug-in outlet; no battery backup stated",
+      "certification": "UL listed"
+    },
+    "fit_checks": [
+      "Confirm an outlet faces the intended approach and the sensor is unobstructed.",
+      "Check coverage, glare and shutoff timing with the user's actual route.",
+      "Confirm one light is enough for the requested area."
+    ],
+    "limitations": [
+      "Activates only in low light and depends on detected movement.",
+      "Requires outlet power; not emergency backup lighting.",
+      "Lighting alone does not establish fall prevention or a safe route."
+    ],
+    "setup_tasks": [
+      "Confirm delivered total and suitable outlet.",
+      "Position light and keep the route unobstructed.",
+      "Test activation and 90-second shutoff in darkness with the user."
+    ],
+    "evidence_note": "Manufacturer page reviewed and displayed In stock, ready to ship; this is a dated public claim, not a live inventory/delivery confirmation. No household field test performed.",
+    "checked_at": "2026-09-08",
+    "needs": [
+      "lighting"
+    ],
+    "kind": "product",
+    "channels": [
+      "online"
+    ],
+    "source_scope": "U.S. online product listing",
+    "location": "U.S. online store; delivery to the destination is unverified",
+    "review_required": false,
+    "unknowns": [
+      "Current stock, exact variant and address-specific delivery",
+      "Current payable total and applicable return terms",
+      "Individual fit, compatibility and resident acceptance"
+    ]
+  },
+  {
+    "id": "moen_dn7060_shower_chair",
+    "name": "Moen Home Care Shower Chair DN7060",
+    "provider": "Moen official U.S. online store",
+    "url": "https://shop.moen.com/products/dn7060",
+    "source_urls": [
+      "https://shop.moen.com/products/dn7060",
+      "https://assets.moen.com/shared/docs/product-specifications/dn7060sp.pdf",
+      "https://assets.moen.com/shared/docs/instruction-sheets/csiidn7060toolfreeshowerchair.pdf",
+      "https://www.nia.nih.gov/health/falls-and-falls-prevention/preventing-falls-home-room-room"
+    ],
+    "summary": "Assessment required: adjustable bathing seat with back support; a candidate to discuss after measuring the bathing area and reviewing the resident's needs.",
+    "published_price_cents": 8899,
+    "price_note": "Observed manufacturer web price for DN7060 Glacier on 2026-09-08. Tax and shipping excluded; delivered total and stock unverified.",
+    "specs": {
+      "model": "DN7060",
+      "seat_width_in": 22,
+      "seat_depth_in": 19.25,
+      "leg_width_in": 18,
+      "seat_height_range_in": [
+        15,
+        21
+      ],
+      "published_load_limit_note": "Store describes a 300 lb capacity; technical-sheet warning restricts users to below 300 lb. Do not treat the boundary as cleared.",
+      "assembly": "Tool-free; all four legs must have equal settings with locking studs engaged."
+    },
+    "fit_checks": [
+      "Measure usable tub/shower floor and entry clearance; an unmeasured room sketch cannot establish seat or leg fit.",
+      "Review seat height, entry/exit and assistance needs with a qualified healthcare professional, as the manufacturer instructs.",
+      "Confirm user-specific load suitability against the technical-sheet warning; do not infer it from age.",
+      "Check the actual surface and assembled chair for stable placement and fully engaged leg locks."
+    ],
+    "limitations": [
+      "Assessment-required candidate only; dimensions or age alone do not establish safe use.",
+      "Do not stand on, jump on, tilt or modify the chair; follow the complete manufacturer instructions.",
+      "Online listing is not confirmed inventory, delivery eligibility or a reservation for a San Francisco address.",
+      "Published load wording differs between the store and technical sheet; unresolved boundaries require clarification."
+    ],
+    "setup_tasks": [
+      "Record bathing-area measurements and the resident's stated preferences.",
+      "Arrange the manufacturer-directed individual suitability review.",
+      "Confirm variant, inventory, delivery date, tax, shipping and returns before any purchase decision.",
+      "Arrange assembly and inspection following the complete supplied instructions."
+    ],
+    "evidence_note": "Manufacturer product page and product-specific technical/assembly documents checked on 2026-09-08. NIA describes room-by-room assessment and professional home assessment where appropriate. No in-home measurement, personal suitability, stock or checkout verification performed.",
+    "checked_at": "2026-09-08",
+    "review_required": true,
+    "needs": [
+      "bathroom_support"
+    ],
+    "kind": "product",
+    "channels": [
+      "online"
+    ],
+    "source_scope": "U.S. online product listing",
+    "location": "U.S. online store; delivery to the destination is unverified",
+    "unknowns": [
+      "Current stock, exact variant and address-specific delivery",
+      "Current payable total and applicable return terms",
+      "Individual fit, compatibility and resident acceptance"
+    ]
+  },
+  {
+    "id": "moen_r8716d1gch_grab_bar",
+    "name": "Moen Home Care 16-inch Designer Grab Bar R8716D1GCH",
+    "provider": "Moen official U.S. online store",
+    "url": "https://shop.moen.com/products/r8716d1g",
+    "source_urls": [
+      "https://shop.moen.com/products/r8716d1g",
+      "https://assets.moen.com/shared/docs/product-specifications/r8716d1gsp.pdf",
+      "https://assets.moen.com/shared/docs/instruction-sheets/inslr87d1g.pdf",
+      "https://www.nia.nih.gov/health/falls-and-falls-prevention/preventing-falls-home-room-room"
+    ],
+    "summary": "Assessment required: fixed wall grab bar with grip pads; installation and placement must be evaluated for the actual bathroom and resident.",
+    "published_price_cents": 5734,
+    "price_note": "Observed manufacturer web price for the displayed Chrome R8716D1GCH variant on 2026-09-08. Tax, shipping, extra mounting hardware and installation excluded; recheck exact variant.",
+    "specs": {
+      "model": "R8716D1GCH",
+      "finish": "Chrome",
+      "bar_length_in": 16,
+      "bar_diameter_in": 1.25,
+      "published_assembled_dimensions_in": "19.15 x 2.8",
+      "published_load_limit_note": "Store states up to 500 lb; family installation manual limits users to below 500 lb and requires correct installation.",
+      "installation": "Product specification requires screws into wood studs at both ends; family manual describes an exception using SecureMount anchors. Anchor suitability is not established by this catalog.",
+      "orientation_note": "Family manual limits diagonal installations to bars at least 24 inches long; do not infer angled suitability for this 16-inch model from general marketing."
+    },
+    "fit_checks": [
+      "Have a competent installer verify actual wall construction, stud locations, mounting method and the applicable current instructions.",
+      "Review placement, reach and support needs for the resident; a sketch does not establish these facts.",
+      "Confirm exact model, intended orientation and any separate anchor compatibility before installation.",
+      "Confirm required property permission before drilling and user-specific suitability before use."
+    ],
+    "limitations": [
+      "Assessment-required candidate only; the advertised load figure does not establish the installed wall assembly's capacity.",
+      "General marketing and detailed instructions differ in their angle/mounting qualifications; obtain model-specific resolution where needed.",
+      "Do not modify the product; installed screws require periodic inspection per the manual.",
+      "No San Francisco delivery quote, installation quote, stock confirmation or booking has been obtained."
+    ],
+    "setup_tasks": [
+      "Capture the resident's goal and arrange an on-site placement/mounting assessment.",
+      "Resolve model, load and mounting questions using the applicable manufacturer instructions.",
+      "Obtain permission for physical changes where required.",
+      "Confirm full product, hardware, delivery and installation cost and timing before a purchase or booking.",
+      "Arrange installation and inspection; record completion separately from ordering."
+    ],
+    "evidence_note": "Official Chrome variant product page, exact-series technical specification and Designer Elegance family installation manual checked on 2026-09-08. Manual requires individual healthcare advice before use. NIA supports bathroom modifications and appropriate professional home assessment; it does not endorse this SKU. No wall or resident assessment performed.",
+    "checked_at": "2026-09-08",
+    "review_required": true,
+    "needs": [
+      "bathroom_support"
+    ],
+    "kind": "product",
+    "channels": [
+      "online"
+    ],
+    "source_scope": "U.S. online product listing",
+    "location": "U.S. online store; delivery to the destination is unverified",
+    "unknowns": [
+      "Current stock, exact variant and address-specific delivery",
+      "Current payable total and applicable return terms",
+      "Individual fit, compatibility and resident acceptance"
+    ]
+  }
+]

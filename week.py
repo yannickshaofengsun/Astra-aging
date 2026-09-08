@@ -31,16 +31,16 @@ SCENARIOS = {
     "supply_unavailable": "Usual household supply is unavailable",
     "event_cancelled": "Community venue cancels",
     "home_comfort": "Resident reports an awkward-to-reach item",
-    "device_missing": "Fictional home-device reading is missing",
+    "device_missing": "Home-device reading is missing",
 }
 ROUTINES = {
-    "week_ack_appointment": ("calendar", "Send chosen slot; receive mock clinic acknowledgment"),
-    "week_request_backup": ("backup_transport", "Request fictional outbound and return help"),
-    "week_request_papers": ("paperwork", "Send one delegated paperwork preparation request"),
-    "week_order_supplies": ("supplies", "Place fictional replacement order — $18.50"),
-    "week_cancel_event": ("calendar", "Acknowledge cancellation of only this activity's arrangements"),
-    "week_book_activity": ("calendar", "Receive mock acknowledgment for the chosen alternative"),
-    "week_request_home_help": ("home_help", "Send the chosen home-help request"),
+    "week_ack_appointment": ("calendar", "Record the chosen appointment slot"),
+    "week_request_backup": ("backup_transport", "Request help with unconfirmed travel"),
+    "week_request_papers": ("paperwork", "Ask for the appointment papers to be prepared"),
+    "week_order_supplies": ("supplies", "Record a replacement order ($18.50 estimate)"),
+    "week_cancel_event": ("calendar", "Cancel this activity's arrangements"),
+    "week_book_activity": ("calendar", "Record the alternative activity"),
+    "week_request_home_help": ("home_help", "Request the chosen home help"),
 }
 
 
@@ -62,22 +62,25 @@ class WeekPlan:
         self.injected = []
         self.appointment_version = 1
         self.appointment_status = "acknowledged"
-        self.appointment_evidence = "Existing fictional Tuesday appointment."
+        self.appointment_evidence = "Follow-up appointment scheduled for Tuesday at 10:00."
         self.selected_slot = None
         self.backup_version = None
+        self.requested_legs = []
         self.return_status = "not_recorded"
+        self.return_version = None
+        self.return_person = None
         self.ride_evidence = "Existing pickup accepted; return travel is not recorded."
         self.papers_requested = False
         self.papers_staged = False
         self.papers_needed = False
-        self.papers_evidence = "Current reported document location is confirmed in the simulation; checklist checking and physical staging have not been reported."
+        self.papers_evidence = "Documents are reported at the entrance shelf. Checking the papers and packing them are still pending."
         self.supplies = {"status": "stocked", "item": "Unscented paper towels",
                          "substitute": "Unscented recycled paper towels", "cost": 18.5,
                          "preapproved_equivalent": True, "one_time_approval": False,
-                         "evidence": "Fictional starting supply is available."}
+                         "evidence": "Paper towels are in the starting inventory. Replacement planning estimate: $18.50; no store quote."}
         self.community = {"title": self._activity_title(), "date": "2026-09-17", "time": "14:00",
                           "status": "confirmed", "arrangement": "confirmed", "choice": None,
-                          "evidence": "Fictional chosen activity and its own arrangements accepted."}
+                          "evidence": "The chosen activity is on the household calendar."}
         self.comfort = {"status": "no_request", "observation": None, "choice": None,
                         "helped": None, "placement_reported": False,
                         "evidence": "No home-help need has been reported."}
@@ -120,7 +123,7 @@ class WeekPlan:
         result = []
         if self.appointment_status == "selected":
             result.append("week_ack_appointment")
-        if (self.appointment_status == "acknowledged" and self.host.transport["status"] != "confirmed"
+        if (self.appointment_status == "acknowledged" and (self.host.transport["status"] != "confirmed" or self.return_status != "confirmed")
                 and self.backup_version != self.appointment_version):
             result.append("week_request_backup")
         if self.papers_needed and not self.papers_staged and not self.papers_requested:
@@ -152,14 +155,14 @@ class WeekPlan:
                              and self.comfort["status"] != "no_request")
                              and not (key in ("appointment_conflict", "event_cancelled")
                                       and self.community["status"] != "confirmed")]
-            c["actions"] = [b("week_reset", "Reset this fictional week"),
-                b("week_mode", "Use individual manual administration" if self.mode == "assisted"
-                  else "Use permissioned assistance", {"mode": "manual" if self.mode == "assisted" else "assisted"})]
+            c["actions"] = [b("week_reset", "Restart this week"),
+                b("week_mode", "Manage each task myself" if self.mode == "assisted"
+                  else "Let Astra handle approved tasks", {"mode": "manual" if self.mode == "assisted" else "assisted"})]
             if not all(self.permissions[key] for key in PERMISSIONS):
-                c["actions"].append(b("week_permissions", "Grant these fictional routine permissions",
+                c["actions"].append(b("week_permissions", "Allow these routine tasks",
                                       {**{key: True for key in PERMISSIONS}, "supply_cap": self.permissions["supply_cap"]}))
             if any(self.permissions[key] for key in PERMISSIONS):
-                c["actions"].append(b("week_permissions", "Revoke routine permissions", {key: False for key in PERMISSIONS}))
+                c["actions"].append(b("week_permissions", "Remove routine permissions", {key: False for key in PERMISSIONS}))
             if self.appointment_status == "conflict":
                 c["decisions"] += [b("week_choose_slot", "Keep activity; choose Friday 10:00 appointment", {"slot": "keep_activity"}),
                                     b("week_choose_slot", f"Keep {self.host.appointment['day']} {self.host.appointment['time']} appointment; release activity", {"slot": "keep_appointment"})]
@@ -168,18 +171,18 @@ class WeekPlan:
                 c["decisions"].append(b("week_confirm_own_travel", "I have arranged my own outbound and return travel for this appointment"))
             if self.supplies["status"] == "needs_order":
                 if not self._permitted("week_order_supplies") and self.mode == "assisted":
-                    c["decisions"].append(b("week_choose_supply", "Approve this $18.50 fictional substitute once", {"choice": "approve"}))
+                    c["decisions"].append(b("week_choose_supply", "Approve this replacement once ($18.50 estimate)", {"choice": "approve"}))
                 c["decisions"].append(b("week_choose_supply", "Skip the replacement purchase", {"choice": "skip"}))
             if self.community["status"] in ("cancel_pending", "decision_pending") and self.community["choice"] is None:
                 if self.profile["preferred_activity"] != "quiet_time":
-                    c["decisions"].append(b("week_choose_activity", "Choose the sample Friday 14:00 alternative", {"choice": "alternative"}))
+                    c["decisions"].append(b("week_choose_activity", "Choose Friday at 14:00 instead", {"choice": "alternative"}))
                 c["decisions"].append(b("week_choose_activity", "Leave the time free", {"choice": "free"}))
             if self.comfort["status"] == "decision_pending":
                 if self.comfort["observation"] == "missing_reading":
-                    c["decisions"].append(b("week_choose_comfort", "Request a check of the fictional device", {"choice": "check"}))
+                    c["decisions"].append(b("week_choose_comfort", "Ask someone to check the device", {"choice": "check"}))
                 else:
                     c["decisions"].append(b("week_choose_comfort", "Try moving the item to existing storage", {"choice": "storage"}))
-                    c["decisions"].append(b("week_choose_comfort", "Prepare an illustrative $25 bedside-caddy option", {"choice": "equipment"}))
+                    c["decisions"].append(b("week_choose_comfort", "Review a bedside caddy ($25 planning estimate)", {"choice": "equipment"}))
                 c["decisions"].append(b("week_choose_comfort", "Leave things as they are", {"choice": "leave"}))
             if self.comfort["status"] == "reported":
                 c["decisions"] += [b("week_comfort_feedback", "That helped", {"helped": True}),
@@ -188,38 +191,43 @@ class WeekPlan:
             if self.mode == "manual":
                 c["routine"] = [b(action, ROUTINES[action][1]) for action in routine]
             elif any(self._permitted(action) for action in routine):
-                c["routine"] = [b("week_run", "Let the assistant complete permitted administration")]
+                c["routine"] = [b("week_run", "Let Astra handle the approved tasks")]
         else:
             available = self.profile["helper_available"]
             c["helpers"].append(b("week_helper_availability", "I am unavailable for physical help" if available
                                   else "I am available for physical help", {"available": not available}))
-            if self.backup_version == self.appointment_version and self.host.transport["status"] == "needs_confirmation":
+            if self.backup_version == self.appointment_version and (
+                    "outbound" in self.requested_legs and self.host.transport["status"] == "needs_confirmation"
+                    or "return" in self.requested_legs and self.return_status == "requested"):
                 if available:
-                    c["helpers"].append(b("week_accept_backup", "Accept this appointment's outbound and return help"))
-                c["helpers"].append(b("week_decline_backup", "Decline this backup request"))
+                    c["helpers"].append(b("week_accept_backup", "Accept this appointment's " + " and ".join(self.requested_legs) + " help"))
+                c["helpers"].append(b("week_decline_backup", "Decline this " + " and ".join(self.requested_legs) + " request"))
             if available and self.papers_requested and not self.papers_staged:
                 c["helpers"].append(b("week_stage_papers", "I checked and staged the papers on the entrance shelf"))
             if self.supplies["status"] == "ordered":
-                c["helpers"].append(b("week_deliver_supplies", "Report observed delivery of the fictional supply"))
+                c["helpers"].append(b("week_deliver_supplies", "I received the replacement paper towels"))
             if available and self.supplies["status"] == "delivered":
-                c["helpers"].append(b("week_place_supplies", "I placed the delivered supply in storage"))
+                c["helpers"].append(b("week_place_supplies", "I put the paper towels in storage"))
             if available and self.comfort["status"] == "requested":
-                c["helpers"].append(b("week_report_home_help", "I completed the requested physical change or device check"))
+                c["helpers"].append(b("week_report_home_help", "I completed the requested home help"))
         return c
 
     def _exceptions(self):
         result = []
         if self.appointment_status == "conflict":
             result.append("The moved appointment overlaps a chosen activity; a resident choice is needed.")
-        if self.host.transport["status"] == "confirmed" and self.return_status != "confirmed":
+        if (self.host.transport["status"] == "confirmed" and self.return_status != "confirmed"
+                and self.backup_version != self.appointment_version):
             result.append("The pickup is accepted, but required return travel is not recorded or accepted.")
         if self.mode == "assisted":
             missing = [ROUTINES[action][1] for action in self._routine_needed() if not self._permitted(action)]
             if missing:
                 result.append("Outside current permission: " + "; ".join(missing) + ".")
-        if self.backup_version == self.appointment_version and self.host.transport["status"] != "confirmed":
-            result.append("Outbound and return travel remain unaccepted." if self.profile["helper_available"]
-                          else "The named backup is unavailable; both travel legs remain unresolved.")
+        missing_legs = [leg for leg, status in (("outbound", self.host.transport["status"]), ("return", self.return_status))
+                        if status != "confirmed"]
+        if self.backup_version == self.appointment_version and missing_legs:
+            result.append("The " + " and ".join(missing_legs) + " travel remains unaccepted." if self.profile["helper_available"]
+                          else "The named backup is unavailable; " + " and ".join(missing_legs) + " travel remains unresolved.")
         if not self.profile["helper_available"] and (self.papers_requested and not self.papers_staged
                 or self.supplies["status"] == "delivered" or self.comfort["status"] == "requested"):
             result.append("Requested physical preparation has no available local helper; it is not complete.")
@@ -231,7 +239,7 @@ class WeekPlan:
         if role not in ("resident", "family"):
             raise ValueError("Choose resident or family.")
         appointment = {key: value for key, value in self.host.appointment.items() if key != "reason" or role == "resident"}
-        appointment.update(id="appointment", label="Fictional appointment", status=self.appointment_status,
+        appointment.update(id="appointment", label="Follow-up appointment", status=self.appointment_status,
                            version=self.appointment_version, owner="resident", dependencies=["transport", "paperwork"],
                            evidence=self.appointment_evidence)
         community = dict(self.community, id="community", label="Chosen activity", owner="resident", dependencies=["community_arrangements"])
@@ -240,18 +248,36 @@ class WeekPlan:
             transport_status = "partially_confirmed"
         papers_status = ("prepared" if self.papers_staged else "requested" if self.papers_requested else
                          "location_known" if self.host.documents["status"] == "confirmed" else "location_uncertain")
+        travel_people = [self.host.transport.get("person") if self.host.transport["status"] == "confirmed" else None,
+                         self.return_person if self.return_status == "confirmed" else None]
+        travel_owner = " / ".join(dict.fromkeys(person for person in travel_people if person)) or self.profile["helper"]
+        paperwork_owner = self.profile["helper"]
+        mission = getattr(getattr(self.host, "mission", None), "state", {})
+        if self.papers_staged and mission.get("appointment_version") == self.appointment_version:
+            reports = [event for event in mission.get("events", []) if event["action"] == "mission_stage_documents"]
+            if reports:
+                paperwork_owner = reports[-1]["actor"]
+                if paperwork_owner == "family" and mission.get("known", {}).get("backup") == "accepted":
+                    from mission import BACKUP
+                    paperwork_owner = BACKUP
+        checklist = ["Appointment letter", "Papers requested for the visit"]
+        hospital = getattr(getattr(self.host, "hospital", None), "state", {})
+        notice = hospital.get("retrieved_visit")
+        if notice and hospital.get("shared_version") == self.appointment_version and hospital.get("reconciled_version") == notice["source_version"]:
+            checklist = notice["appointment"]["paperwork"]
         tasks = [
-            {"id": "transport", "label": "Appointment travel", "status": transport_status, "owner": self.profile["helper"],
+            {"id": "transport", "label": "Appointment travel", "status": transport_status, "owner": travel_owner,
              "dependencies": ["appointment"], "evidence": self.ride_evidence,
-             "outbound": deepcopy(self.host.transport), "return_status": self.return_status, "requested_version": self.backup_version},
-            {"id": "paperwork", "label": "Required-paper checklist and preparation", "status": papers_status,
-             "owner": self.profile["helper"], "dependencies": ["appointment"], "evidence": self.papers_evidence,
-             "checklist": ["Appointment letter", "Requested household paperwork"], "reported_location": deepcopy(self.host.documents),
+             "outbound": deepcopy(self.host.transport), "return_status": self.return_status, "requested_version": self.backup_version,
+             "requested_legs": self.requested_legs, "return_version": self.return_version, "return_person": self.return_person},
+            {"id": "paperwork", "label": "Appointment papers", "status": papers_status,
+             "owner": paperwork_owner, "dependencies": ["appointment"], "evidence": self.papers_evidence,
+             "checklist": checklist, "reported_location": deepcopy(self.host.documents),
              "staging_reported": self.papers_staged},
-            dict(self.supplies, id="supplies", label="Household supplies", owner="resident", dependencies=[]),
-            {"id": "community_arrangements", "label": "Activity's own arrangements", "status": self.community["arrangement"],
+            dict(self.supplies, id="supplies", label="Paper towels", owner="resident", dependencies=[]),
+            {"id": "community_arrangements", "label": "Activity arrangements", "status": self.community["arrangement"],
              "owner": "resident", "dependencies": ["community"], "evidence": self.community["evidence"]},
-            dict(self.comfort, id="comfort", label="Home comfort and observations", owner="resident", dependencies=[]),
+            dict(self.comfort, id="comfort", label="Easier access at home", owner="resident", dependencies=[]),
         ]
         return deepcopy({"profile": self.profile, "profiles": [{"id": p["id"], "label": p["label"]} for p in PROFILES],
             "profile_fields": PROFILE_FIELDS, "mode": self.mode, "permissions": self.permissions,
@@ -260,14 +286,13 @@ class WeekPlan:
             "exceptions": self._exceptions(), "accounting": self._accounting(),
             "adaptation": self._adaptation_view(),
             "fixture": {"is_synthetic": True, "week_of": "2026-09-14", "country": "United States",
-                        "service_rules": "Mock clinic slots: Thursday 14:00 or Friday 10:00; response immediate. "
-                            "One named backup controls acceptance of both travel legs. One $18.50 substitute offer, "
-                            "available through Friday noon; fictional store acknowledgment is immediate. "
-                            "Activity alternative Friday 14:00, one household place; immediate mock response. "
-                            "No clock advances or real-world transaction occur."},
-            "notice": "Three authored fictional situations, not a representative U.S. sample. "
-                      "Age and setting do not infer ability. Requests and acknowledgments are simulated; "
-                      "physical completion requires a person's report."})
+                        "service_rules": "Demo appointment slots: Thursday 14:00 or Friday 10:00. "
+                            "One named helper accepts or declines each travel request. "
+                            "Paper-towel replacement planning estimate: $18.50, available through Friday noon in this scenario. "
+                            "Alternative activity: Friday 14:00 for one household. Acknowledgments are simulated; "
+                            "no clock advances, booking, order, payment, or external message occurs."},
+            "notice": "Demo week: household events, prices, and service replies are simulated. No bookings, purchases, or messages are sent. "
+                      "Completion needs a person's report. Age and setting do not determine ability."})
 
     def _adaptation_view(self):
         if self.comfort["choice"] != "equipment":
@@ -277,7 +302,7 @@ class WeekPlan:
                 "order_state": "prepared", "is_synthetic": True,
                 "placement_reported": self.comfort["placement_reported"],
                 "preview_image": "/assets/sketch-adapted.png" if getattr(self.host, "home", {}).get("id") == "sketch" else None,
-                "notice": "Illustrative equipment and prepared request only; no product, stock, or purchase is verified."}
+                "notice": "$25 is a planning estimate. Select a real product and check dimensions, reach, load, stock, and total price before ordering."}
 
     def _validate_payload(self, payload, allowed):
         if not isinstance(payload, dict) or not payload or set(payload) - set(allowed):
@@ -298,9 +323,9 @@ class WeekPlan:
                 self._validate_payload(payload, ["id"])
                 match = next((p for p in PROFILES if p["id"] == payload.get("id")), None)
                 if match is None:
-                    raise ValueError("Choose one of the fictional household situations.")
+                    raise ValueError("Choose one of the household situations.")
                 self._start(match, restore=True)
-                return "Selected a fresh fictional household week; private scenario state was reset."
+                return "Started a fresh week for the selected household."
             if action == "week_configure":
                 self._validate_payload(payload, PROFILE_FIELDS)
                 if any(value not in PROFILE_FIELDS[key] for key, value in payload.items()):
@@ -309,7 +334,7 @@ class WeekPlan:
                 if not changes and self.profile_confirmed:
                     raise ValueError("Those profile values are already recorded.")
                 self.profile.update(changes)
-                text = "Resident recorded independent fictional profile choices: " + ", ".join(payload) + "."
+                text = "Resident updated their household preferences: " + ", ".join(payload) + "."
                 category = "correction" if self.profile_confirmed else "setup"
                 self.profile_confirmed = True
             else:
@@ -317,16 +342,17 @@ class WeekPlan:
                 for key, value in payload.items():
                     if key == "supply_cap":
                         if type(value) not in (int, float) or not isfinite(value) or not 0 <= value <= 100:
-                            raise ValueError("The fictional supply cap must be between $0 and $100.")
+                            raise ValueError("The supply spending limit must be between $0 and $100.")
                     elif type(value) is not bool:
                         raise ValueError("Standing permissions must be true or false.")
                 if self.permissions_confirmed and all(self.permissions[key] == value for key, value in payload.items()):
                     raise ValueError("Those permissions are already recorded.")
-                revoked = any(self.permissions[key] and value is False for key, value in payload.items() if key in PERMISSIONS)
+                supply_changed = any(key in payload and payload[key] != self.permissions[key]
+                                     for key in ("supplies", "supply_cap"))
                 self.permissions.update(payload)
-                if revoked or "supply_cap" in payload:
+                if supply_changed:
                     self.supplies["one_time_approval"] = False
-                text = "Resident updated bounded fictional permissions; completed acknowledgments remain history."
+                text = "Resident updated the allowed tasks. Earlier confirmations remain in the activity history."
                 category = "correction" if self.permissions_confirmed else "setup"
                 self.permissions_confirmed = True
             self._record(role, category, text)
@@ -340,10 +366,10 @@ class WeekPlan:
             raise ValueError("That action is unavailable, already resolved, or needs a current decision first.")
         if action == "week_reset":
             self._start(self.profile, restore=True)
-            return "Reset the fictional week; no external arrangement changed."
+            return "Restarted the demo week."
         if action == "week_mode":
             self.mode = payload["mode"]
-            return "Changed the demonstration administration mode."
+            return "Changed how the household tasks are managed."
         if action == "week_inject":
             return self._inject(payload["scenario"])
         if action == "week_run":
@@ -358,7 +384,7 @@ class WeekPlan:
                     text = self._routine(routine)
                     completed.append(text)
                     self._record("agent", "administration", text)
-            text = f"Assistant completed {len(completed)} permitted fictional administrative steps; physical reports remain separate."
+            text = f"Astra completed {len(completed)} approved steps in the demo. Delivery and home-help reports are still required."
             self._record(role, "supervision", text)
             return text
         if action in ROUTINES:
@@ -373,7 +399,10 @@ class WeekPlan:
     def _invalidate_ride(self):
         self.host.transport.update(status="needs_confirmation", person=None, for_date=None)
         self.backup_version = None
+        self.requested_legs = []
         self.return_status = "needs_confirmation"
+        self.return_version = None
+        self.return_person = None
         self.ride_evidence = "Appointment changed; neither travel leg is accepted for this version."
 
     def _inject(self, scenario):
@@ -383,14 +412,17 @@ class WeekPlan:
             self.host.appointment.update(day=day, date=self.community["date"], time=self.community["time"], pickup="13:15")
             self.appointment_version += 1
             self.appointment_status = "conflict"
-            self.appointment_evidence = f"Mock clinic offered {day} {self.community['time']}, conflicting with the chosen activity."
+            self.appointment_evidence = f"The appointment was offered for {day} {self.community['time']}, overlapping the chosen activity."
             self.selected_slot = None
             self._invalidate_ride()
         elif scenario == "driver_decline":
             self.host.transport.update(status="declined", person=None, for_date=None)
             self.backup_version = None
+            self.requested_legs = []
             self.return_status = "declined"
-            self.ride_evidence = "Fictional usual driver declined; no accepted backup or return travel."
+            self.return_version = None
+            self.return_person = None
+            self.ride_evidence = "The usual driver is unavailable. Pickup and return travel need another arrangement."
         elif scenario == "papers_moved":
             self.host._actual_document_location = "Bedroom drawer"
             self.host.documents["status"] = "last_known"
@@ -400,16 +432,16 @@ class WeekPlan:
             self.papers_evidence = "The recorded entrance-shelf location is last known; the checklist remains applicable."
         elif scenario == "supply_unavailable":
             self.supplies.update(status="needs_order", one_time_approval=False,
-                                 evidence="Mock store reports the usual supply unavailable; an $18.50 equivalent is offered.")
+                                 evidence="The usual paper towels are unavailable. Recycled paper towels are an alternative; planning estimate: $18.50, with no store quote.")
         elif scenario == "event_cancelled":
             self.community.update(status="cancel_pending", arrangement="cancel_pending", choice=None,
-                                  evidence="Mock venue cancelled this event; only its own arrangements need closure.")
+                                  evidence="The activity was cancelled. Close its arrangements or choose another time.")
         else:
             missing = scenario == "device_missing"
             self.comfort.update(status="decision_pending", observation="missing_reading" if missing else "awkward_reach",
-                evidence="Fictional device reading unavailable; no clinical interpretation." if missing
+                evidence="The home device has not reported a reading. A device check is needed; this says nothing about the resident's health." if missing
                          else "Resident reports an often-used item is awkward to reach; no measured safety conclusion.")
-        return "Introduced a fictional scenario: " + SCENARIOS[scenario] + "."
+        return "Added a change to the week: " + SCENARIOS[scenario] + "."
 
     def _routine(self, action):
         if action == "week_ack_appointment":
@@ -418,14 +450,22 @@ class WeekPlan:
                 self.host.appointment.update(day="Friday", date="2026-09-18", time="10:00", pickup="09:15")
             self.appointment_version += 1
             self.appointment_status = "acknowledged"
-            self.appointment_evidence = "Mock clinic acknowledged the resident's selected slot. Attendance is not established."
+            self.appointment_evidence = "The chosen appointment slot is recorded in the demo. Attendance is still unreported."
             self._invalidate_ride()
-            return "Mock clinic acknowledged the chosen appointment; its new travel is still pending."
+            return "The new appointment is recorded in the demo; pickup and return travel need confirmation."
         if action == "week_request_backup":
             self.backup_version = self.appointment_version
-            self.host.transport.update(status="needs_confirmation", person=None, for_date=None)
-            self.return_status = "requested"
-            self.ride_evidence = f"Requested {self.profile['helper']} for {self.host.appointment['day']} outbound and return travel, appointment version {self.appointment_version}; no acceptance yet."
+            self.requested_legs = []
+            if self.host.transport["status"] != "confirmed":
+                self.requested_legs.append("outbound")
+                self.host.transport.update(status="needs_confirmation", person=None, for_date=None)
+            if self.return_status != "confirmed":
+                self.requested_legs.append("return")
+                self.return_status = "requested"
+                self.return_version = self.appointment_version
+                self.return_person = None
+            legs = " and ".join(self.requested_legs)
+            self.ride_evidence = f"Requested {self.profile['helper']} for {self.host.appointment['day']} {legs} travel, appointment version {self.appointment_version}; requested legs are not accepted yet. Other accepted travel is unchanged."
             return self.ride_evidence
         if action == "week_request_papers":
             self.papers_requested = True
@@ -433,16 +473,16 @@ class WeekPlan:
             return self.papers_evidence
         if action == "week_order_supplies":
             self.supplies.update(status="ordered", one_time_approval=False,
-                                 evidence="Mock store acknowledged the $18.50 substitute order. Delivery and placement are unreported.")
+                                 evidence="Demo replacement order recorded at the $18.50 planning estimate. No real order was placed; delivery and storage reports are pending.")
             return self.supplies["evidence"]
         if action == "week_cancel_event":
             self.community["arrangement"] = "cancelled"
             self.community["status"] = {None: "decision_pending", "free": "free", "alternative": "alternative_selected"}[self.community["choice"]]
-            self.community["evidence"] = "Mock cancellation acknowledged for this activity and its own arrangements only."
+            self.community["evidence"] = "This activity and its arrangements are cancelled in the demo."
             return self.community["evidence"]
         if action == "week_book_activity":
-            self.community.update(title=self._activity_title() + " — sample alternative", date="2026-09-18", time="14:00",
-                                  status="confirmed", arrangement="confirmed", evidence="Mock venue acknowledged the chosen alternative; attendance is unreported.")
+            self.community.update(title=self._activity_title() + " — Friday session", date="2026-09-18", time="14:00",
+                                  status="confirmed", arrangement="confirmed", evidence="The Friday alternative is on the demo calendar. Attendance is still unreported.")
             return self.community["evidence"]
         self.comfort.update(status="requested", evidence="Chosen home-help request sent; physical work is unreported.")
         return self.comfort["evidence"]
@@ -451,7 +491,7 @@ class WeekPlan:
         if action == "week_choose_slot":
             self.selected_slot = payload["slot"]
             self.appointment_status = "selected"
-            self.appointment_evidence = "Resident chose an offered appointment slot; mock clinic acknowledgment is pending."
+            self.appointment_evidence = "Resident chose an appointment slot; acknowledgment is pending."
             if self.selected_slot == "keep_appointment":
                 self.community.update(status="cancel_pending", arrangement="cancel_pending", choice="free",
                                       evidence="Resident chose the conflicting appointment and released this activity; cancellation acknowledgment pending.")
@@ -459,22 +499,37 @@ class WeekPlan:
         if action == "week_confirm_own_travel":
             self.host.transport.update(status="confirmed", person="Resident", for_date=self.host.appointment["date"])
             self.backup_version = None
+            self.requested_legs = []
             self.return_status = "confirmed"
+            self.return_version = self.appointment_version
+            self.return_person = "Resident"
             self.ride_evidence = "Resident reports their own outbound and return plan for this appointment version; no transport-provider acceptance is inferred."
             return self.ride_evidence
         if action == "week_helper_availability":
             self.profile["helper_available"] = payload["available"]
-            if not payload["available"] and self.host.transport["status"] == "confirmed" and self.backup_version == self.appointment_version:
-                self.host.transport.update(status="declined", person=None, for_date=None)
-                self.return_status = "declined"
-                self.ride_evidence = "The accepting helper withdrew availability; both travel legs are unresolved."
+            if not payload["available"]:
+                withdrawn = []
+                if self.host.transport["status"] == "confirmed" and self.host.transport["person"] == self.profile["helper"]:
+                    self.host.transport.update(status="declined", person=None, for_date=None)
+                    withdrawn.append("outbound")
+                if (self.return_status == "confirmed" and self.return_version == self.appointment_version
+                        and self.return_person == self.profile["helper"]):
+                    self.return_status = "declined"
+                    withdrawn.append("return")
+                if withdrawn:
+                    self.ride_evidence = "The accepting helper withdrew " + " and ".join(withdrawn) + " availability; other accepted travel is unchanged."
             return "Helper reported their own physical-help availability."
         if action in ("week_accept_backup", "week_decline_backup"):
             accept = action == "week_accept_backup"
-            self.host.transport.update(status="confirmed" if accept else "declined", person=self.profile["helper"] if accept else None,
-                                       for_date=self.host.appointment["date"] if accept else None)
-            self.return_status = "confirmed" if accept else "declined"
-            self.ride_evidence = f"{self.profile['helper']} {'accepted' if accept else 'declined'} outbound and return travel for the current appointment version {self.appointment_version}."
+            if "outbound" in self.requested_legs:
+                self.host.transport.update(status="confirmed" if accept else "declined", person=self.profile["helper"] if accept else None,
+                                           for_date=self.host.appointment["date"] if accept else None)
+            if "return" in self.requested_legs:
+                self.return_status = "confirmed" if accept else "declined"
+                self.return_version = self.appointment_version
+                self.return_person = self.profile["helper"] if accept else None
+            legs = " and ".join(self.requested_legs)
+            self.ride_evidence = f"{self.profile['helper']} {'accepted' if accept else 'declined'} {legs} travel for the current appointment version {self.appointment_version}. Other accepted travel is unchanged."
             return self.ride_evidence
         if action == "week_stage_papers":
             self.papers_staged = True
@@ -486,7 +541,7 @@ class WeekPlan:
             if payload["choice"] == "skip":
                 self.supplies.update(status="declined", one_time_approval=False, evidence="Resident chose to skip the replacement purchase.")
             else:
-                self.supplies.update(one_time_approval=True, evidence="Resident explicitly approved this $18.50 equivalent once; no order acknowledgment yet.")
+                self.supplies.update(one_time_approval=True, evidence="Resident approved one paper-towel replacement at the $18.50 planning estimate. No order has been recorded.")
             return self.supplies["evidence"]
         if action in ("week_deliver_supplies", "week_place_supplies"):
             placed = action == "week_place_supplies"
@@ -498,7 +553,7 @@ class WeekPlan:
             self.community["choice"] = choice
             if self.community["arrangement"] == "cancelled":
                 self.community["status"] = "alternative_selected" if choice == "alternative" else "free"
-            return "Resident chose a sample alternative." if choice == "alternative" else "Resident chose to leave the time free; that is a complete valid choice."
+            return "Resident chose the Friday activity." if choice == "alternative" else "Resident chose to leave the time free; that is a complete valid choice."
         if action == "week_choose_comfort":
             choice = payload["choice"]
             self.comfort.update(choice=choice, status="declined" if choice == "leave" else "chosen",
@@ -519,12 +574,19 @@ class WeekPlan:
             self.appointment_version += 1
             self.appointment_status = "acknowledged"
             self.selected_slot = None
-            self.appointment_evidence = "Appointment moved through the existing fictional appointment control."
+            self.appointment_evidence = "The follow-up appointment was rescheduled; travel needs fresh confirmation."
             self._invalidate_ride()
         elif action in ("confirm_ride", "decline_ride"):
-            self.backup_version = None
-            self.return_status = "not_recorded"
-            self.ride_evidence = "Existing control recorded pickup availability only; return travel is not recorded."
+            # A pickup reply is not a new appointment or a reply about the return leg.
+            if action == "confirm_ride":
+                self.requested_legs = [leg for leg in self.requested_legs if leg != "outbound"]
+            else:
+                self.backup_version = None
+                self.requested_legs = []
+            if self.return_status == "confirmed" and self.return_version == self.appointment_version:
+                self.ride_evidence = "Existing control recorded pickup availability; the accepted return for this appointment is unchanged."
+            else:
+                self.ride_evidence = "Existing control recorded pickup availability only; return travel remains " + self.return_status.replace("_", " ") + "."
         elif action == "move_documents":
             self.papers_requested = False
             self.papers_staged = False

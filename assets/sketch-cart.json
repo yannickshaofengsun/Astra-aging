@@ -1,0 +1,92 @@
+{
+  "option_id": "ikea_nissafors",
+  "sku": "20399777",
+  "article_number": "203.997.77",
+  "name": "IKEA NISSAFORS utility cart, black",
+  "tiers": 3,
+  "casters": 4,
+  "source_url": "https://www.ikea.com/us/en/p/nissafors-utility-cart-black-20399777/",
+  "source_date": "2026-09-08",
+  "known_product_dimensions": {
+    "inches": {
+      "length": 19.875,
+      "width": 11.75,
+      "height": 32.625
+    },
+    "metres": {
+      "length": 0.504825,
+      "width": 0.29845,
+      "height": 0.828675
+    },
+    "source": "IKEA US product measurements; metres converted from listed inches"
+  },
+  "price": {
+    "amount": 29.99,
+    "currency": "USD",
+    "kind": "regular listed price",
+    "source_date": "2026-09-08",
+    "source_url": "https://www.ikea.com/us/en/p/nissafors-utility-cart-black-20399777/",
+    "tax_delivery_availability": "not checked",
+    "purchase_made": false
+  },
+  "conditional_offer_observed": {
+    "amount": 19.99,
+    "currency": "USD",
+    "condition": "In-store only; IKEA Family offer",
+    "starts": "2026-09-08",
+    "ends": "2026-12-24",
+    "availability_and_eligibility_confirmed": false
+  },
+  "room_id": "bedroom_upper_left",
+  "room_label": "R1",
+  "cart_world_position": [
+    -2.86,
+    1.14,
+    0.0425
+  ],
+  "cart_world_position_anchor": "footprint centre at floor contact",
+  "display_scale": {
+    "scene_units_per_product_metre": 0.85,
+    "arbitrary_illustrative": true,
+    "house_real_world_scale": null,
+    "scene_unit_system": "NONE",
+    "display_dimensions_scene_units": [
+      0.42910123,
+      0.25368261,
+      0.7043738
+    ],
+    "assumption": "Product proportions are preserved but display scale relative to the symbolic house is arbitrary. No physical fit, clearance, reach or navigation is established."
+  },
+  "model_provenance": "Authored simplified visual reconstruction; not manufacturer CAD. Overall product dimensions sourced; component details approximate.",
+  "fit": "unknown",
+  "clearance": "unknown",
+  "caption": "IKEA NISSAFORS black cart beside R1's bed. Illustrative placement only; house scale, fit and clearances are unknown.",
+  "assets": {
+    "blend": "/assets/sketch-cart.blend",
+    "image": "/assets/sketch-cart.png",
+    "glb": "/assets/sketch-cart.glb"
+  },
+  "render": {
+    "width": 1800,
+    "height": 1100,
+    "camera_matches_source": true
+  },
+  "source_assets_sha256": {
+    "home.blend": "352519b7a02a062c3dfd90d2d537be9d93eea032bd4a0bac260e38a72d0fb3d7",
+    "home.png": "9b4838e77b1f2a0d684a31cd2eba600982a6261327bfe60b78fa0599ede0b836",
+    "home.glb": "aa37bf74cc22c2ab98ecf7c85e10af2261c1c7a2d40b630836808c1bf75a6cce",
+    "sketch-home.blend": "043f1c06664dae913e1dfe0eb46b347c30e52a2a75e12a8a5b328b4dc157fc75",
+    "sketch-home.png": "1d8cbe5dbff2eb6450eb0d0442d5e05e60bd7e0363baa6421c39e8489f59646a",
+    "sketch-home.glb": "bd65d094ec395b71190e139d00ecfa36c7c0abfb3a9f1bde7c7b1abf1807c267",
+    "sketch-adapted.blend": "89bd7da477e99faa990261c6ec7258087349f5a9d568ec6b75941008e1ebd031",
+    "sketch-adapted.png": "64b19d76ea70833cee852c5f83dcc46f1f9eff453b48cc1736e10aef4e10d239"
+  },
+  "verification": {
+    "cart_mesh_objects": 37,
+    "shelf_count": 3,
+    "wheel_count": 4,
+    "display_mesh_inside_R1": true,
+    "display_mesh_overlaps_bed_or_table": false,
+    "physical_fit_checked": false
+  }
+}
