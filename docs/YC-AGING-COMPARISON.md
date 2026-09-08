@@ -1,5 +1,7 @@
 # YC aging companies and CareAnchor's working positioning
 
+[Back to README](../README.md)
+
 Sources checked 2026-09-08. Product descriptions below come from YC profiles and company websites; the proposed offer and lessons are our interpretation. This is a selected comparison, not an exhaustive market map or proof of demand for CareAnchor.
 
 ## Working direction

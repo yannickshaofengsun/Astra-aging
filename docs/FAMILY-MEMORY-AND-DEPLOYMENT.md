@@ -1,12 +1,14 @@
 # Family memory, organization, and independent operation
 
+[Back to README](../README.md) · Code paths in this document are relative to the repository root.
+
 Requested on September 8, 2026. The user asked to coordinate agent memory and family organization, and clarified that self-deployment means both a family installing/running the system and the agent continuing coordination on its own.
 
 The first continuity delivery is implemented. The broader autonomous-operation and family-installation layers below remain a deployment design. The central coordination task owns sequencing and the canonical Messages session; **Find previous AI for aging idea** remains the integration lead. This task implemented `coordination.py` and its checks after central transferred their ownership; existing service, household, hospital and interface owners integrated the shared contract.
 
 The implemented memory covers delivery-window, message-detail and routine preferences, with resident-selected sharing, correction and forgetting. The existing fictional Alex/Morgan roster now supports self-reported, inclusive date intervals. This is not yet an arbitrary-family onboarding system or a general personal-facts store. Native Settings controls and natural resident remember/forget requests use the same state. No hosted service was deployed by this work.
 
-Current verification: all 15 repository check scripts passed after the final source changes, including 34 server cases. Two actual Astra calls through an isolated server completed a private remember request and subsequent forget request; both family model contexts excluded the private selection. The interface owner verified resident edit/share/forget, own-person date ranges, stale controls and permission-only saves at narrow and desktop widths. These tests use fictional households and establish no real-world care outcome.
+Continuity verification checkpoint (September 8, 2026): all 15 repository check scripts passed after that delivery's final source changes, including 34 server cases. Two actual Astra calls through an isolated server completed a private remember request and subsequent forget request; both family model contexts excluded the private selection. The interface owner verified resident edit/share/forget, own-person date ranges, stale controls and permission-only saves at narrow and desktop widths. These tests use fictional households and establish no real-world care outcome.
 
 Forgetting or superseding a recorded preference also erases its retired memory-bearing request text and proposed value from current saved state. A digest, record ID and action status retain duplicate detection without restoring the erased text. Equal direct memory edits leave source, history and memory revision unchanged. Existing backups and data already sent to a model are separate retention boundaries; this change does not claim to erase those copies.
 

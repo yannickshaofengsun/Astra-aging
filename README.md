@@ -1,6 +1,10 @@
 # CareAnchor
 
-A hackathon household simulation: editable Blender homes, a shared household week, separate resident/family chats, and live GPT-6-Astra conversations. A demanding outing mission adds a clock, hidden item locations, unavailable help, and symbolic robot transport. Three fictional U.S. household situations connect appointments, transport, paperwork, supplies, community activities, and home support. U.S. online products and San Francisco local services form a separate public discovery layer.
+CareAnchor helps older adults arrange everyday support at home, connecting family and outside services around one shared plan. We are building toward the right help with less effort from the resident and family: use the household's preferences, budget and availability, reuse existing arrangements, and make each responsibility clear.
+
+This hackathon prototype demonstrates hospital coordination: a resident asks for help, named family members accept separate duties, and a changed appointment reopens the affected arrangements. The initial customer hypothesis is independent care-management practices; older adults and their families use and benefit from the service. Reduced coordination effort remains an impact to test in real pilots.
+
+[Run locally](#run-locally) · [Try visit coordination](#try-visit-coordination) · [Repository map](#repository-map) · [Project documents](#project-documents) · [Checks](#checks-and-boundaries)
 
 ## Watch the demo
 
@@ -8,32 +12,11 @@ A hackathon household simulation: editable Blender homes, a shared household wee
 
 [![CareAnchor demo](demo/preview.jpg)](demo/careanchor-demo.mp4)
 
-The current cut has captions and no audio, ready for narration later. The one-minute pitch covers the target customer, product vision, working prototype, and intended impact. Recorded app interactions show two live GPT-6-Astra interpretations, separate family acceptances, and a changed hospital notice that requires fresh replies. The target buyer and impact remain hypotheses to test in real pilots. The recording uses fictional household/provider data in the web rehearsal; it does not depict an Apple Messages round trip. Model waiting time and pauses are shortened.
+The current cut has captions and no audio, ready for narration later. The one-minute pitch covers the target customer, product vision, working prototype, and intended impact. Recorded app interactions show two live GPT-6-Astra interpretations, separate family acceptances, and a changed hospital notice that requires fresh replies. The target buyer and impact remain hypotheses to test in real pilots. The recording uses fictional household/provider data in the web rehearsal; it does not depict an Apple Messages round trip. Model waiting time and pauses are shortened. This recording predates the optional visit-change monitoring below.
 
 CareAnchor is the product; **GPT-6-Astra is the model**. The application calls the signed-in Codex desktop runtime for structured interpretations, validates the proposed actions in Python, and updates one shared household plan. This is a bounded agent workflow built without a separate agent framework. A controlled local Apple Messages self-chat test also verified automatic intake, a real model call, and an automatic reply shown as Delivered; a separate older-adult device and voice input have not been verified.
 
-## Codebase
-
-The demo uses Python's standard library and plain HTML, CSS, and JavaScript. There are no pip packages, npm dependencies, external database service, or frontend build step. The optional Apple Messages adapter uses a local SQLite ledger for receipt cursors and send claims. The runnable checks below cover household rules, persistence, HTTP boundaries, Messages filtering, and the public catalog.
-
-| File or folder | Purpose |
-| --- | --- |
-| `web/index.html` | Browser interface, resident/family views, chat, and household controls |
-| `server.py` | Local HTTP server, JSON endpoints, and asset serving |
-| `simulation.py` | Shared household state, role-filtered views, and scenario actions |
-| `week.py` | Household-week planning, permissions, dependencies, and completion evidence |
-| `astra_bridge.py` | Read-only chat and bounded action proposals through the signed-in desktop Codex runtime |
-| `mission.py` | Outing mission, observed facts, human reports, and symbolic robot executor |
-| `persistence.py` | Atomic, validated local snapshots without action replay |
-| `coordination.py` | Named responsibilities, scoped preferences, dated availability, and bounded reminders |
-| `imessage_bridge.py` | Optional private Apple Messages receipt and idempotent outbound transport |
-| `mission_evaluation.py` | Five reproducible mission outcomes through actual runtime validators |
-| `comparison.py` | Matched manual-versus-assisted simulation replays |
-| `real_world.py` and `catalog/` | Curated U.S. online products and San Francisco local service references |
-| `blender/` and `assets/` | Scene-generation scripts, editable scenes, exports, and rendered images |
-| `test_*.py` | Runnable checks for simulation, week, comparison, catalog, mission, persistence, evaluation, and server |
-
-## Open the demo
+## Run locally
 
 For a fresh checkout:
 
@@ -52,7 +35,42 @@ Open [the household demo](http://127.0.0.1:8765). The server binds only to this 
 
 The simulation and included home renders work without Blender or a model connection. Live chat requires the compatible macOS desktop runtime at the path above, a signed-in account with model access, and network access. Its runtime path and model are constants in `astra_bridge.py`; this repository does not provide credentials or install that runtime.
 
-### Optional Apple Messages
+## Try visit coordination
+
+1. Arrange a fictional hospital visit once through the resident chat, naming the driver, companion and return-ride helper.
+2. In **Settings**, allow relevant household updates and optionally record each helper's own dated availability from their perspective. In **Resident → Visits**, allow hospital retrieval and visit requests; allow backup requests if reassignment should be possible.
+3. Turn on **Watch visit changes**, then choose **Simulate hospital changing the visit**. CareAnchor checks the changed notice, current plan and availability for the new visit date through GPT-6-Astra, and creates separate responsibility requests.
+4. Switch to each named helper's perspective to accept their own responsibilities. CareAnchor waits for those replies; one acceptance does not confirm the other duties or physical attendance.
+
+Monitoring applies to changed notices for an existing fictional visit while the local server runs. It turns off after restart, preserves existing task identities for the same notice, and makes no model calls while the source is unchanged. It is not general continuous care or sensor monitoring. Live interpretation has the same model requirements as chat.
+
+## Repository map
+
+The demo uses Python's standard library and plain HTML, CSS, and JavaScript. There are no pip packages, npm dependencies, external database service, or frontend build step. The optional Apple Messages adapter uses a local SQLite ledger for receipt cursors and send claims. The runnable checks below cover household rules, persistence, HTTP boundaries, Messages filtering, and the public catalog.
+
+| File or folder | Purpose |
+| --- | --- |
+| `web/index.html` | Browser interface, resident/family views, chat, and household controls |
+| `server.py` | Local HTTP server, JSON endpoints, and asset serving |
+| `hospital.py` | Fictional provider notices, visit responsibilities, and prescription logistics |
+| `proactive.py` | Optional watcher for changed fictional visit notices, using the existing coordinator |
+| `simulation.py` | Shared household state, role-filtered views, and scenario actions |
+| `week.py` | Household-week planning, permissions, dependencies, and completion evidence |
+| `astra_bridge.py` | Read-only chat and bounded action proposals through the signed-in desktop Codex runtime |
+| `mission.py` | Outing mission, observed facts, human reports, and symbolic robot executor |
+| `persistence.py` | Atomic, validated local snapshots without action replay |
+| `coordination.py` | Named responsibilities, scoped preferences, dated availability, and bounded reminders |
+| `assessment.py`, `meal.py`, `family_edition.py` | Home assessment, the illustrative meal routine, and an optional printed family edition |
+| `imessage_bridge.py` | Optional private Apple Messages receipt and idempotent outbound transport |
+| `mission_evaluation.py` | Five reproducible mission outcomes through actual runtime validators |
+| `comparison.py` | Matched manual-versus-assisted simulation replays |
+| `real_world.py` and `catalog/` | Curated U.S. online products and San Francisco local service references |
+| `blender/` and `assets/` | Scene-generation scripts, editable scenes, exports, and rendered images |
+| `demo/` | Silent 60-second video, captions, narration script, and recording notes |
+| `docs/` | Project contract, scenario plan, memory/deployment design, and positioning research |
+| `test_*.py` | Runnable checks for simulation, week, comparison, catalog, mission, persistence, evaluation, and server |
+
+## Optional Apple Messages
 
 Messages is disabled by default. Supervised activation requires macOS access to the local Messages database, an explicitly approved one-to-one participant/account mapping, a saved household, and a private configuration file under ignored `.runtime`. Its exact fields are `enabled` and `recipients`; each recipient has `actor_id`, `handle`, `account_id`, and `inbound_account`. The two account identifiers are distinct and must be verified. Never put private mappings in Git or derive recipients from message text.
 
@@ -68,7 +86,9 @@ The separately authorized same-account demo adds `--messages-self-test` to both 
 
 The adapter can send real addressed updates when explicitly configured and permitted. `submitted` records a successful send invocation; delivery and read remain unknown. An uncertain send stays claimed across restart and is not automatically resent. Preserve both `.runtime/mission-state.json` and `.runtime/imessage-bridge.sqlite3`, along with the private configuration, when making a stopped-server backup; deleting the ledger is not a retry procedure. A clean second-machine installation and unattended operation have not been verified.
 
-Try the demanding outing mission:
+## Other rehearsals
+
+### Outing mission
 
 1. Choose a house and **Start outing rehearsal**. The appointment changes; the primary helper, relocated items, and a blocked symbolic route must be resolved in the same run. The resident chooses whether to proceed.
 2. Set the mission permissions and departure target. **Ask CareAnchor to take the next step** sends only observed mission facts and permitted coordinator actions to GPT-6-Astra. It selects one action; the server validates the current revision and permissions before applying it. The proposal and accepted/rejected result remain visible.
@@ -79,7 +99,7 @@ Try the demanding outing mission:
 
 The mission clock uses authored fictional minutes; it does not measure care time or physical travel. House renders remain unchanged. A separate symbolic route graph does not establish actual home paths, collision avoidance, clearance, robot training, or transfer to hardware.
 
-Try the shared week:
+### Shared week
 
 1. Choose a fictional household. Expand **Household preferences and permissions** to edit independent preferences and bounded permissions.
 2. Grant the routine permissions you want to test. Expand **Try a change in this fictional week** and introduce the clinic conflict.
@@ -89,7 +109,7 @@ Try the shared week:
 6. Expand **Compare manual and assisted administration** for actual matched replays across all three situations.
 7. Explore **Online products and local support** by need, channel, and optional budget. Review official sources, unknowns, and preparation checklists. These are public references; no provider has been contacted.
 
-The separate garden practice story:
+### Garden practice
 
 1. Select **Your house sketch** or the **Example household**.
 2. Try the clearly fictional garden activity, or choose **Keep my usual routine**.
@@ -97,7 +117,7 @@ The separate garden practice story:
 4. Optionally request company. Switch to Family to accept that request; readiness waits for acceptance if help was requested.
 5. Replay to try a different choice. These are simulated outcomes, with no real signup or support request.
 
-The separate appointment scenario remains available:
+### Appointment and document changes
 
 1. Move the appointment to Thursday. The previous ride confirmation becomes invalid.
 2. Ask the resident chat what still needs arranging.
@@ -139,35 +159,22 @@ Rebuild the scene and render:
 
 Rebuild the sketch variant with `--python blender/build_sketch_home.py` using the same Blender binary.
 
-## Project coordination
+## Project documents
 
-[Paperclip: CareAnchor](http://127.0.0.1:3100/LAU/projects/astra-aging) holds the baseline work LAU-14 through LAU-20, household-week expansion LAU-21 through LAU-24, San Francisco discovery LAU-25, and the demanding mission LAU-26. The local, untracked `.coordination/paperclip.json` records issue IDs, statuses, and worker mappings. Paperclip is not required to run the demo. The central coordination task is `01a0821f-4f9a-7b12-a7b8-a9747fd76124`.
+- [Project contract](docs/PROJECT.md): direction, scope, state/API contracts and implementation checkpoints.
+- [U.S. simulation plan](docs/US-SIMULATION-PLAN.md): fictional scenarios, delivery sequence and acceptance criteria.
+- [Family memory and deployment](docs/FAMILY-MEMORY-AND-DEPLOYMENT.md): implemented continuity and the remaining family-installation design.
+- [Positioning research](docs/YC-AGING-COMPARISON.md): selected comparisons and unvalidated business hypotheses.
+- [Catalog notes](catalog/README.md) and [recording notes](demo/README.md): source boundaries and demo contents.
 
-Separate Codex tasks:
-
-- **Build resident and family chats** — `01a0821a-8f95-7993-8bde-d260ce7501b1`, owns `web/index.html`.
-- **Connect Astra household conversations** — `01a0821a-9180-76b3-8ff9-2d53becfc024`, owns the local server and Astra connection.
-
-Codex subagents built the Blender scene and configured Paperclip. The coordinator records verified progress in Paperclip; automatic Paperclip-to-Codex synchronization and recurring agent runs are not configured. The existing unrelated Paperclip agent was preserved.
+Plans and dated checkpoints describe their recorded scope; the runnable application and current checks establish implementation behavior.
 
 ## Checks and boundaries
 
 ```sh
-python3 test_simulation.py
-python3 test_week.py
-python3 test_comparison.py
-python3 test_real_world.py
-python3 test_server.py
-python3 test_mission.py
-python3 test_mission_integration.py
-python3 test_mission_evaluation.py
-python3 test_coordination.py
-python3 test_meal.py
-python3 test_hospital.py
-python3 test_assessment.py
-python3 test_family_edition.py
-python3 test_household_integration.py
-python3 test_imessage_bridge.py
+for test in test_*.py; do
+  python3 "$test" || exit
+done
 python3 mission_evaluation.py
 ```
 
@@ -180,5 +187,3 @@ The canonical server keeps a validated local household snapshot; programmatic `H
 The mission evaluator runs five authored cases through the real validators: successful recovery, backup refusal, no alternate route, cancellation, and overdue work. It reports actual actions, resident/family role interventions, waits, rejected attempts, and unresolved outcomes. These scripts do not invoke GPT or demonstrate reduced family burden. A live HTTP Astra check separately verified a GPT-selected helper request and accepted validator result, with all unconfirmed work remaining unresolved.
 
 The catalog contains 10 researched U.S. online products plus 6 existing public options across 13 needs, checked on September 8, 2026. Published specifications, fit checks, setup tasks, and source/manual conflicts remain visible. The two bathroom-support products require assessment; an address-specific shipping promise, safe fit, or installed total is not established. There is no live availability feed or provider integration. A listed item price does not establish an affordable delivered total. Public matches and checklists remain **not requested**; simulated orders and reports never change real-world coordination status.
-
-See `PROJECT.md` for the shared implementation contract.

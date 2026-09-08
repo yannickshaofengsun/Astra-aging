@@ -1,5 +1,7 @@
 # U.S. household planning and coordination simulation
 
+[Back to README](../README.md) · Commands and code paths in this document are relative to the repository root.
+
 ## Outcome
 
 Build a playable week in the life of U.S. older-adult households, where an assistant maintains a whole plan across home needs, appointments, paperwork, supplies, transport, and chosen community activities. The primary outcome is less unpaid family care and coordination time, beginning with administrative work. People establish preferences and bounded permissions; the assistant completes permitted simulated administration and asks about consequential exceptions. Changes propagate through affected arrangements, and every claimed outcome has evidence.

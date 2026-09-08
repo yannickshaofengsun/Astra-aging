@@ -1,5 +1,7 @@
 # CareAnchor — first playable household
 
+[Back to README](../README.md) · Commands and code paths in this document are relative to the repository root.
+
 Build a local household simulation with an editable Blender home and a game-like experience for exploring everyday activities and optional local support. GPT-6-Astra supplies the live conversation. Explicit state rules govern confirmations and privacy; the appointment-change scenario is the first implemented flow.
 
 The ultimate product vision is an ongoing coordination service that helps older adults live at home while reducing the organizing, repeated explanation and chasing done by residents and families. The current task is a usable, understandable local hackathon demonstration of that service. The user explicitly said hosted-service implementation is unnecessary for this demo. Do not add hosting, billing or production infrastructure to the current build; explain the vision through completed interactions and clear results.
@@ -164,6 +166,17 @@ Every `Household.event` mutation now requires the current integer revision, incl
 
 Canonical `python3 server.py` enables `.runtime/mission-state.json`. `Household(save_path=None)` and `Server(...,save_path=None)` default to isolated unsaved state for tests. Atomic bounded JSON snapshots contain mission plus shared household/week context; schema, fields/types, enums, integrity and mission evidence are validated before adoption. No actions replay during load. Restores advance revisions, and invalid files produce a visible load error with a fresh household. A failed write preserves the old file and reports that the current in-memory state was not saved. Resident `mission_save`/`mission_restore` also use `/api/event` and current revisions. These files are not served or committed.
 
-`mission_evaluation.py` evaluates five authored cases in fresh households without a model call or active-state mutation. The report distinguishes scripted coordinator actions, human reports, waits, deliberate rejection probes, fictional clock values and unresolved outcomes. It is separate from actual GPT action evidence and does not measure family time or physical collision counts. Run the eight `test_*.py` scripts listed in README, plus the evaluator, for reproducible evidence.
+`mission_evaluation.py` evaluates five authored cases in fresh households without a model call or active-state mutation. The report distinguishes scripted coordinator actions, human reports, waits, deliberate rejection probes, fictional clock values and unresolved outcomes. It is separate from actual GPT action evidence and does not measure family time or physical collision counts. Run the check scripts and evaluator listed in the [README](../README.md#checks-and-boundaries) for reproducible evidence.
 
 Public discovery now supports `channel=all|online|local` and 13 needs, with ten researched U.S. online product records alongside six prior public options. Published specs, fit/setup checks, source conflicts and two assessment-required bathroom options remain explicit. Every option remains `not_requested`; the mission coordinator receives no catalog data and cannot initiate a real transaction. Catalog source/field ownership remains with the assessment task.
+
+## Project coordination
+
+[Paperclip: CareAnchor](http://127.0.0.1:3100/LAU/projects/astra-aging) holds the baseline work LAU-14 through LAU-20, household-week expansion LAU-21 through LAU-24, San Francisco discovery LAU-25, and the demanding mission LAU-26. The local, untracked `.coordination/paperclip.json` records issue IDs, statuses, and worker mappings. Paperclip is not required to run the demo. The central coordination task is `01a0821f-4f9a-7b12-a7b8-a9747fd76124`.
+
+Separate Codex tasks:
+
+- **Build resident and family chats** — `01a0821a-8f95-7993-8bde-d260ce7501b1`, owns `web/index.html`.
+- **Connect Astra household conversations** — `01a0821a-9180-76b3-8ff9-2d53becfc024`, owns the local server and Astra connection.
+
+Codex subagents built the Blender scene and configured Paperclip. The coordinator records verified progress in Paperclip; automatic Paperclip-to-Codex synchronization and recurring agent runs are not configured. The existing unrelated Paperclip agent was preserved.
