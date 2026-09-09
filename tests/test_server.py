@@ -984,6 +984,43 @@ class BridgeTests(unittest.TestCase):
             else:
                 self.assertEqual(result['memory'], forget)  # Nested null is an explicit forget, not omission.
 
+    def test_equipment_wire_preserves_omission_and_explicit_unknown(self):
+        from careanchor.coordination import PROPOSAL_SCHEMA
+        original = json.loads(json.dumps(PROPOSAL_SCHEMA))
+        proposal = ServerTests.supply_proposal() | {'intent': 'assess_home', 'item': '', 'window': '',
+            'assessment_draft': {'need': {'value': 'lighting'}, 'budget_cents': {'value': None},
+                'observation': None, 'space': {'value': {'room_id': {'value': 'Entrance'}, 'width_in': None}},
+                'preferences': {'value': {'allow_drilling': {'value': False}, 'notes': None}}}}
+        def run(args, prompt, directory):
+            schema = json.loads((directory / 'schema.json').read_text())
+            draft = schema['properties']['assessment_draft']['anyOf'][0]
+            self.assertEqual(set(draft['required']), set(draft['properties']))
+            return json.dumps(proposal).encode()
+        with patch.object(bridge, '_run', side_effect=run):
+            result = bridge.interpret_request({'proposal_schema': PROPOSAL_SCHEMA}, 'My lighting budget is unknown.')
+        self.assertEqual(result['assessment_draft'], {'need': 'lighting', 'budget_cents': None,
+                         'space': {'room_id': 'Entrance'}, 'preferences': {'allow_drilling': False}})
+        self.assertEqual(PROPOSAL_SCHEMA, original)
+
+    def test_equipment_wire_binds_exact_current_room_ids(self):
+        from careanchor.coordination import PROPOSAL_SCHEMA
+        original = json.loads(json.dumps(PROPOSAL_SCHEMA))
+        for room_ids in (['Bedroom', 'Entrance'], ['R1', 'R2']):
+            context = {'proposal_schema': PROPOSAL_SCHEMA,
+                       'assessment': {'rooms': [{'id': room} for room in room_ids]}}
+            def run(args, prompt, directory):
+                schema = json.loads((directory / 'schema.json').read_text())
+                self.assertEqual(schema['properties']['room_id']['enum'], ['', *room_ids])
+                draft = schema['properties']['assessment_draft']['anyOf'][0]['properties']
+                for group, keys in (('space', ('room_id',)), ('existing_item', ('current_room_id', 'target_room_id'))):
+                    fields = draft[group]['anyOf'][0]['properties']['value']['properties']
+                    for key in keys:
+                        self.assertEqual(fields[key]['anyOf'][0]['properties']['value']['enum'], [None, *room_ids])
+                return json.dumps(ServerTests.supply_proposal()).encode()
+            with patch.object(bridge, '_run', side_effect=run):
+                bridge.interpret_request(context, 'Use the entrance.')
+            self.assertEqual(PROPOSAL_SCHEMA, original)
+
     def test_process_output_and_timeout_limits(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.object(bridge, 'MAX_OUTPUT', 10):

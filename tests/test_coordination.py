@@ -322,7 +322,7 @@ def check_product_selection():
     assert context["assessment"]["strategy"] == "keep" and not context["assessment"]["candidates"]
     source = next(item for item in context["assessment"]["evaluated_candidates"] if item["id"] == "ikea_nissafors")
     assert source["evaluation"]["status"] == "unknown"
-    assert set(context["intent_fields"]["assess_home"]) == {"item", "room_id", "strategy"}
+    assert set(context["intent_fields"]["assess_home"]) == {"item", "room_id", "strategy", "assessment_draft"}
     p = proposal("assess_home", item=source["id"], room_id="Bedroom", strategy="replace")
     fields = {"budget_cents": 10000, "space": {"room_id": "Bedroom", "basis": "measured",
         "width_in": 50, "depth_in": 50, "height_in": 50}, "preferences": {
@@ -357,12 +357,12 @@ def check_product_selection():
     c.accept("product", p, c.version)
     assert not assessment.state["selections"], "A proposal alone changed the draft"
 
-    original = assessment.apply
-    def fail_add(action, *args, **kwargs):
+    original = type(assessment).apply
+    def fail_add(target, action, *args, **kwargs):
         if action == "assessment_add":
             raise ValueError("Selection changed during draft preparation")
-        return original(action, *args, **kwargs)
-    with patch.object(assessment, "apply", side_effect=fail_add):
+        return original(target, action, *args, **kwargs)
+    with patch.object(type(assessment), "apply", fail_add):
         reject(home, lambda: c.advance("product"))
     assert assessment.state["strategy"] == "keep", "A failed selection left a partial strategy change"
     run(home, "product")
@@ -673,7 +673,73 @@ def check_proactive_request_provenance():
     assert c.state["history"][-1]["actor"] == "resident" and c.state["history"][-1]["event"] == "request"
 
 
+def check_equipment_draft_requests():
+    home = Household(save_path=None)
+    c, assessment = home.coordination, home.assessment
+    permissions = deepcopy(c.state["permissions"])
+    draft = {"need": "lighting", "observation": "The entrance is dark at night.", "budget_cents": 3000,
+             "space": {"room_id": "Entrance"}, "preferences": {"allow_drilling": False, "allow_assembly": False}}
+    c.begin("light", "Please prepare a night light draft for the entrance under $30.")
+    before = assessment.dump()
+    p = proposal("assess_home", strategy="replace", item="jasco-ge-26140", room_id="Entrance", assessment_draft=draft)
+    # The new need and constraints are staged before candidate evaluation.
+    c.accept("light", p, c.version)
+    assert assessment.dump() == before
+    run(home, "light")
+    assert c._get("requests", "light")["status"] == "completed"
+    assert assessment.state["need"] == "lighting" and assessment.state["constraints"]["budget_cents"] == 3000
+    assert assessment.state["selections"][0]["option_id"] == "jasco-ge-26140"
+    assert assessment.state["constraints"]["space"]["basis"] == "unknown"
+    assert not c.state["orders"] and not c.state["messages"] and c.state["permissions"] == permissions
+    assert assessment.state["setup_acceptance"] is None
+
+    # A short correction changes only the stated field, even when it makes the
+    # existing selection conflict; the resident's new budget must not be lost.
+    prior = assessment.dump()
+    request(home, "budget", proposal("assess_home", assessment_draft={"budget_cents": 1}), "Actually my budget is one cent.")
+    run(home, "budget")
+    expected = deepcopy(prior); expected["constraints"]["budget_cents"] = 1
+    assert assessment.dump() == expected
+    assert assessment.view("resident")["selections"][0]["evaluation"]["checks"]["budget"]["status"] == "conflict"
+    c.begin("conflict", "Select the light with the new budget.")
+    reject(home, lambda: c.accept("conflict", dict(p, assessment_draft={"budget_cents": 1}), c.version))
+    c.fail("conflict", "The item exceeds the stated budget.")
+
+    # Incomplete intake saves useful facts and asks one question. It never buys,
+    # grants permission, assigns a helper, or pretends the support was arranged.
+    partial = {"observation": "My old lamp is awkward to reach.", "existing_item": {"description": "Old lamp"},
+               "space": {"room_id": None, "width_in": 18}, "setup": "family"}
+    request(home, "partial", proposal("assess_home", assessment_draft=partial, question="Which room is the lamp in?"))
+    run(home, "partial")
+    row = c._get("requests", "partial")
+    assert row["status"] == "needs_clarification" and row["question"] == "Which room is the lamp in?"
+    assert row["effects"] == ["assessment_prepared"] and not row["message_ids"]
+    assert assessment.state["constraints"]["space"]["basis"] == "reported"
+    assert assessment.state["existing_item"]["current_room_id"] is None
+    assert c.state["permissions"] == permissions and assessment.state["setup_acceptance"] is None
+    request(home, "answer", proposal("assess_home", assessment_draft={"existing_item": {"current_room_id": "Bedroom"}}), "It's in the bedroom.")
+    run(home, "answer")
+    assert assessment.state["existing_item"]["description"] == "Old lamp"
+    assert assessment.state["existing_item"]["current_room_id"] == "Bedroom"
+
+    # Stale interpretation and cancelled work cannot overwrite the draft.
+    c.begin("stale-draft", "My budget is $90.")
+    version = c.version
+    c.begin("newer", "New request")
+    reject(home, lambda: c.accept("stale-draft", proposal("assess_home", assessment_draft={"budget_cents": 9000}), version))
+    c.fail("stale-draft", "No edit")
+    c.fail("newer", "No edit")
+    request(home, "cancel-draft", proposal("assess_home", assessment_draft={"budget_cents": 9000}))
+    c._cancel(c._get("requests", "cancel-draft"), "cancelled")
+    unchanged = assessment.dump()
+    assert not c.advance("cancel-draft") and assessment.dump() == unchanged
+    # Completed historical requests do not reselect products against today's need.
+    assessment.apply("assessment_need", "resident", {"need": "reading"})
+    own_state(home)
+
+
 if __name__ == "__main__":
+    check_equipment_draft_requests()
     check_proactive_request_provenance()
     check_supply_and_continuity()
     check_rejection_cancellation_and_restore()

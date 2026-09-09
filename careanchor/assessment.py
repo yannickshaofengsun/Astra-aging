@@ -25,6 +25,23 @@ NOTICE = ("Planning draft based on the resident's stated need and published prod
 ASSEMBLY = {"ikea_nissafors", "moen_dn7060_shower_chair"}
 DRILLING = {"moen_r8716d1gch_grab_bar"}
 
+# Sparse resident-reported updates; omitted fields keep their saved values.
+DRAFT_SCHEMA = {"type": "object", "additionalProperties": False, "properties": {
+    "need": {"type": "string", "enum": list(NEEDS)},
+    "observation": {"type": "string", "maxLength": 500},
+    "budget_cents": {"type": ["integer", "null"], "minimum": 0, "maximum": 100000000},
+    "space": {"type": "object", "additionalProperties": False, "properties": {
+        "room_id": {"type": ["string", "null"]},
+        **{key: {"type": ["number", "null"], "exclusiveMinimum": 0, "maximum": 10000}
+           for key in ("width_in", "depth_in", "height_in")}}},
+    "preferences": {"type": "object", "additionalProperties": False, "properties": {
+        **{key: {"type": ["boolean", "null"]} for key in ("prefer_existing", "allow_assembly", "allow_drilling")},
+        "notes": {"type": "string", "maxLength": 300}}},
+    "setup": {"type": "string", "enum": ["unknown", "resident", "family", "professional"]},
+    "existing_item": {"type": "object", "additionalProperties": False, "properties": {
+        "description": {"type": "string", "maxLength": 200},
+        **{key: {"type": ["string", "null"]} for key in ("current_room_id", "target_room_id")}}}}}
+
 
 def _products(need=None):
     return {item["id"]: item for key in ([need] if need is not None else NEEDS)
@@ -78,7 +95,7 @@ class Assessment:
                 or any(space[key] is not None and (type(space[key]) not in (int, float)
                     or not isfinite(space[key]) or not 0 < space[key] <= 10000)
                     for key in ("width_in", "depth_in", "height_in"))
-                or space["basis"] != "unknown" and space["room_id"] is None
+                or space["basis"] == "measured" and space["room_id"] is None
                 or space["basis"] == "unknown" and any(space[key] is not None for key in ("width_in", "depth_in", "height_in"))):
             raise ValueError(error)
         if (type(prefs) is not dict or set(prefs) != {"prefer_existing", "allow_assembly", "allow_drilling", "notes"}
@@ -98,14 +115,14 @@ class Assessment:
                 or type(existing["home_id"]) is not str or existing["home_id"] not in ("demo", "sketch")):
             raise ValueError(error)
         if existing["description"]:
-            if (not existing["description"].strip() or type(existing["current_room_id"]) is not str
-                    or type(existing["target_room_id"]) is not str):
+            if not existing["description"].strip():
                 raise ValueError(error)
             try:
                 original_rooms = {room["id"] for room in self._rooms(existing["home_id"])}
             except (OSError, ValueError, KeyError, TypeError):
                 raise ValueError(error) from None
-            if existing["current_room_id"] not in original_rooms or existing["target_room_id"] not in original_rooms:
+            if any(existing[key] is not None and (type(existing[key]) is not str or existing[key] not in original_rooms)
+                   for key in ("current_room_id", "target_room_id")):
                 raise ValueError(error)
         elif existing["current_room_id"] is not None or existing["target_room_id"] is not None:
             raise ValueError(error)
@@ -378,6 +395,77 @@ class Assessment:
 
     def dump(self):
         return deepcopy(self.state)
+
+    def proposed(self, draft):
+        """Validate a partial report in isolation; the coordinator decides when to commit it."""
+        self.validate_draft(draft)
+        proposed = type(self).restore(self.host, self.dump())
+        data = proposed.state
+        for key in ("need", "observation"):
+            if key in draft:
+                data[key] = deepcopy(draft[key])
+        constraints = data["constraints"]
+        for key in ("budget_cents", "setup"):
+            if key in draft:
+                constraints[key] = deepcopy(draft[key])
+        if "preferences" in draft:
+            constraints["preferences"].update(deepcopy(draft["preferences"]))
+        if "space" in draft:
+            space = constraints["space"]
+            if (space["home_id"] != self.host.home["id"] or space["room_id"] is not None
+                    and draft["space"].get("room_id", space["room_id"]) != space["room_id"]):
+                space.update(home_id=self.host.home["id"], room_id=None, basis="unknown", width_in=None, depth_in=None, height_in=None)
+            space.update(deepcopy(draft["space"]))
+            if any(key in draft["space"] for key in ("width_in", "depth_in", "height_in")):
+                space["basis"] = "reported" if any(space[key] is not None for key in ("width_in", "depth_in", "height_in")) else "unknown"
+        if "existing_item" in draft:
+            item = data["existing_item"]
+            if item["home_id"] != self.host.home["id"]:
+                item.update(home_id=self.host.home["id"], current_room_id=None, target_room_id=None)
+            item.update(deepcopy(draft["existing_item"]))
+            if item["description"] == "":
+                item.update(current_room_id=None, target_room_id=None)
+        # This existing provenance field also controls whether resident setup was
+        # their own intention. An unrelated budget correction cannot confer that.
+        if "setup" in draft:
+            constraints["recorded_by"] = "resident"
+        if data != self.state:
+            data["setup_acceptance"] = None
+        proposed._validate(data)
+        return proposed
+
+    def validate_draft(self, draft):
+        """Also validate historical reports without applying them to today's draft."""
+        types = {"object": (dict,), "string": (str,), "integer": (int,), "number": (int, float),
+                 "boolean": (bool,), "null": (type(None),)}
+        def check(value, schema):
+            kinds = schema["type"] if type(schema["type"]) is list else [schema["type"]]
+            if type(value) not in tuple(t for kind in kinds for t in types[kind]):
+                raise ValueError("Use the supplied equipment field types.")
+            if value is None:
+                return
+            if ("enum" in schema and value not in schema["enum"]
+                    or type(value) is str and len(value) > schema.get("maxLength", 64)
+                    or type(value) in (int, float) and (type(value) is float and not isfinite(value)
+                        or value < schema.get("minimum", 0) or value > schema.get("maximum", 100000000)
+                        or "exclusiveMinimum" in schema and value <= schema["exclusiveMinimum"])):
+                raise ValueError("An equipment draft value is outside its allowed choices or range.")
+            if type(value) is dict:
+                if not value or set(value) - set(schema["properties"]):
+                    raise ValueError("Use only the supplied equipment draft fields.")
+                for key, part in value.items():
+                    check(part, schema["properties"][key])
+        check(draft, DRAFT_SCHEMA)
+        rooms = {room["id"] for home_id in ("demo", "sketch") for room in self._rooms(home_id)}
+        for group, keys in (("space", ("room_id",)), ("existing_item", ("current_room_id", "target_room_id"))):
+            if any(draft.get(group, {}).get(key) is not None and draft[group][key] not in rooms for key in keys):
+                raise ValueError("Choose a supplied home room.")
+
+    def context(self):
+        view = self.view("resident")
+        # New needs must be resolved from supplied catalog IDs before changing the draft.
+        view["catalog_products"] = list(_products().values())
+        return view
 
     @classmethod
     def restore(cls, host, data):

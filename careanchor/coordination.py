@@ -7,6 +7,8 @@ import json
 from math import isfinite
 import re
 
+from .assessment import DRAFT_SCHEMA
+
 
 ACTORS = {"alex": "Alex", "morgan": "Morgan"}
 ITEMS = {
@@ -24,12 +26,12 @@ APPOINTMENTS = {
 MEMORY_INTENTS = ("remember_preference", "forget_preference")
 INTENTS = ("order_supply", "change_delivery", "cancel_order", "change_appointment", "carry_help", "hospital_coordination", "prescription_refill", "assess_home", "schedule_reminder", *MEMORY_INTENTS, "clarify", "unsupported")
 PROPOSAL_FIELDS = ("intent", "item", "quantity", "window", "order_id", "appointment_choice", "recipients", "helper", "room_id", "strategy", "summary", "question")
-OPTIONAL_PROPOSAL_FIELDS = {"visit_helpers", "memory"}
+OPTIONAL_PROPOSAL_FIELDS = {"visit_helpers", "memory", "assessment_draft"}
 HOSPITAL_INTENTS = ("hospital_coordination", "prescription_refill")
 INTENT_FIELDS = {"order_supply": {"item", "window"}, "change_delivery": {"order_id", "window"},
     "cancel_order": {"order_id"}, "change_appointment": {"appointment_choice", "helper"}, "carry_help": {"helper"},
     "hospital_coordination": {"item", "helper", "visit_helpers"}, "prescription_refill": {"item", "helper"},
-    "assess_home": {"item", "room_id", "strategy"}, "schedule_reminder": {"item"},
+    "assess_home": {"item", "room_id", "strategy", "assessment_draft"}, "schedule_reminder": {"item"},
     "remember_preference": {"memory"}, "forget_preference": {"memory"}, "clarify": set(), "unsupported": set()}
 BOOL_PERMISSIONS = ("orders", "order_changes", "calendar", "notify", "helper_requests")
 PREFERENCES = {"delivery_window": ("morning", "afternoon"), "messages": ("brief", "detailed"), "routine": ("keep", "try")}
@@ -49,6 +51,7 @@ PROPOSAL_SCHEMA = {"type": "object", "additionalProperties": False, "required": 
                        "properties": {"key": {"type": "string", "enum": list(PREFERENCES)},
                            "value": {"type": ["string", "null"], "enum": [None, *[v for choices in PREFERENCES.values() for v in choices]]},
                            "audience": {"type": "array", "maxItems": 3, "items": {"type": "string", "enum": ["resident", *ACTORS]}}}},
+                   "assessment_draft": DRAFT_SCHEMA,
                    "recipients": {"type": "array", "maxItems": 2, "items": {"type": "string", "enum": list(ACTORS)}}}}
 
 
@@ -359,7 +362,7 @@ class Coordination:
             "proposal_schema": PROPOSAL_SCHEMA,
             "intent_fields": {intent: sorted(fields) for intent, fields in INTENT_FIELDS.items()},
             "proposal_help": {"fields": list(PROPOSAL_FIELDS), "intents": list(INTENTS), "quantity": "integer 1–3",
-                "optional_fields": ["visit_helpers", "memory"],
+                "optional_fields": sorted(OPTIONAL_PROPOSAL_FIELDS),
                 "memory": "Only explicit resident remember_preference/forget_preference requests use memory={key,value,audience}. "
                     "Remember uses an existing typed choice and an explicitly selected audience including resident; private means [resident]. "
                     "Forget uses null value and empty audience. Never infer a permanent preference from a one-time order. "
@@ -367,8 +370,12 @@ class Coordination:
                 "visit_helpers": "Only hospital_coordination may include {driver,companion,return}. Each value names alex or morgan; empty entries use helper. Omit the map for an unchanged single-helper request. A fully named map permits helper=''.",
                 "recipients": list(ACTORS), "irrelevant_text_fields": "empty string",
                 "helper": "alex or morgan for change_appointment/carry_help/hospital_coordination/prescription_refill; empty otherwise",
-                "home_assessment": "assess_home compares the current need against household constraints. For replace, item may be an exact evaluated candidate ID with quantity and room_id; "
-                    "keep/relocate/adapt require empty item. A selected product is a review draft, never a purchase or verified fit.",
+                "home_assessment": "assess_home can save explicitly stated fields using sparse assessment_draft. Omitted fields preserve the current draft; null clears a nullable fact. "
+                    "Choose need from assessment.needs and room IDs from assessment.rooms. Only stated dimensions are recorded, always as reported. "
+                    "Use catalog_products for a newly stated need; select only a matching sourced product with no conflict against the proposed constraints. "
+                    "Strategy and room_id may be empty while gathering details. A concise question may accompany useful draft fields, with empty item and recipients. "
+                    "For replace, item may be an exact sourced product ID with quantity and room_id; keep/relocate/adapt require empty item. "
+                    "No strategy means preserve the existing approach, not a new resident decision. Setup is an intention, never acceptance. A product is a review draft, never a purchase or verified fit.",
                 "reminders": "schedule_reminder uses item=one exact pending responsibility message ID and quantity=agreed hours 1–3; recipients/helper are empty because the target fixes recipient and topic."},
             "instruction": "Interpret only the stated request using supplied identifiers. Ask a clarification if a required item, "
                 "order, recipient, helper, or appointment choice is unclear. Use the saved delivery preference only when no window "
@@ -401,6 +408,12 @@ class Coordination:
         if not isinstance(recipients, list) or len(recipients) > 2 or any(r not in ACTORS for r in recipients) or len(set(recipients)) != len(recipients):
             raise ValueError("Address only Alex or Morgan, once each.")
         intent = proposal["intent"]
+        if "assessment_draft" in proposal:
+            if intent != "assess_home":
+                raise ValueError("Only an equipment request may supply assessment draft fields.")
+            # Restore validates shape and values independently of the current need/room.
+            if restoring:
+                self.host.assessment.validate_draft(proposal["assessment_draft"])
         if intent in MEMORY_INTENTS:
             self._memory_payload(proposal.get("memory"), forget=intent == "forget_preference" or restoring and request["memory_redacted"])
             if recipients or proposal["quantity"] != 1:
@@ -420,7 +433,8 @@ class Coordination:
             if not proposal["question"] and intent == "clarify":
                 raise ValueError("A clarification needs a specific question.")
             return
-        if proposal["question"]:
+        if proposal["question"] and not (intent == "assess_home" and proposal.get("assessment_draft")
+                                         and not recipients and not proposal["item"]):
             raise ValueError("A request needing clarification cannot execute effects.")
         if intent == "order_supply" and proposal["item"] not in ITEMS or "window" in used and proposal["window"] not in WINDOWS:
             raise ValueError("Choose a supplied household item and delivery window.")
@@ -439,10 +453,10 @@ class Coordination:
             if (not restoring and not hasattr(self.host, "hospital")) or proposal["item"] != ("visit-001" if intent == "hospital_coordination" else "rx-001"):
                 raise ValueError("Use a supplied hospital notice or existing prescription identifier.")
         if intent == "assess_home":
-            if proposal["strategy"] not in ("keep", "relocate", "adapt", "replace") or proposal["item"] and proposal["strategy"] != "replace":
+            if proposal["strategy"] not in ("", "keep", "relocate", "adapt", "replace") or proposal["item"] and proposal["strategy"] != "replace":
                 raise ValueError("Select a product only for replacement; keep, relocate, and adapt use the existing item.")
             if not restoring:
-                self._assessment_evaluation(proposal)
+                self._assessment_evaluation(proposal, self._proposed_assessment(proposal))
         if intent == "schedule_reminder":
             if recipients:
                 raise ValueError("The reminder target fixes its recipient; do not address extra people.")
@@ -455,12 +469,12 @@ class Coordination:
         if not restoring and len(self.state["messages"]) + len(set(recipients + ([proposal["helper"]] if proposal["helper"] else []))) > MAX_MESSAGES:
             raise ValueError("The saved demonstration inbox is full; no new effects were started.")
 
-    def _assessment_evaluation(self, proposal):
+    def _assessment_evaluation(self, proposal, assessment=None):
         if not hasattr(self.host, "assessment"):
             raise ValueError("The home assessment is unavailable.")
-        assessment = self.host.assessment
+        assessment = assessment or self.host.assessment
         view = assessment.view("resident")
-        if proposal["room_id"] not in {room["id"] for room in view["rooms"]}:
+        if (proposal["room_id"] or proposal["item"]) and proposal["room_id"] not in {room["id"] for room in view["rooms"]}:
             raise ValueError("Choose a current room for the assessment draft.")
         if not proposal["item"]:
             return None
@@ -473,25 +487,25 @@ class Coordination:
             raise ValueError("The candidate conflicts with recorded household constraints: " + "; ".join(conflicts)[:400])
         return evaluation
 
-    def _prepare_assessment(self, proposal):
+    def _proposed_assessment(self, proposal):
         assessment = self.host.assessment
-        before = assessment.dump()
-        try:
-            if before["strategy"] != proposal["strategy"]:
-                assessment.apply("assessment_strategy", "resident", {"strategy": proposal["strategy"]})
-            if proposal["item"]:
-                # Activating replacement can expose other saved draft items. Recheck
-                # the aggregate budget before changing a selection, in the same transaction.
-                self._assessment_evaluation(proposal)
-                desired = {"option_id": proposal["item"], "quantity": proposal["quantity"], "room_id": proposal["room_id"]}
-                saved = next((item for item in before["selections"] if item["option_id"] == proposal["item"]), None)
-                if saved is None or any(saved[key] != value for key, value in desired.items()) or saved["home_id"] != self.host.home["id"]:
-                    if saved is not None:
-                        assessment.apply("assessment_remove", "resident", {"option_id": proposal["item"]})
-                    assessment.apply("assessment_add", "resident", desired)
-        except ValueError:
-            assessment.state = before
-            raise
+        proposed = (assessment.proposed(proposal["assessment_draft"]) if "assessment_draft" in proposal
+                    else type(assessment).restore(self.host, assessment.dump()))
+        if proposal["strategy"] and proposed.state["strategy"] != proposal["strategy"]:
+            proposed.apply("assessment_strategy", "resident", {"strategy": proposal["strategy"]})
+        return proposed
+
+    def _prepare_assessment(self, proposal):
+        proposed = self._proposed_assessment(proposal)
+        self._assessment_evaluation(proposal, proposed)
+        if proposal["item"]:
+            desired = {"option_id": proposal["item"], "quantity": proposal["quantity"], "room_id": proposal["room_id"]}
+            saved = next((item for item in proposed.state["selections"] if item["option_id"] == proposal["item"]), None)
+            if saved is None or any(saved[key] != value for key, value in desired.items()) or saved["home_id"] != self.host.home["id"]:
+                if saved is not None:
+                    proposed.apply("assessment_remove", "resident", {"option_id": proposal["item"]})
+                proposed.apply("assessment_add", "resident", desired)
+        self.host.assessment.state = proposed.dump()
 
     def reply_context(self, actor_id):
         actor = self._actor("family", actor_id)
@@ -651,12 +665,17 @@ class Coordination:
             self._touch("coordinator", "paused", request["question"])
             return True
         if p["intent"] == "assess_home":
-            self._assessment_evaluation(p)
             if phase == 0:
                 self._prepare_assessment(p)
+                if p["question"]:
+                    request.update(status="needs_clarification", phase=1, service="prepared",
+                                   summary=self._outcome_text(request), question=p["question"], effects=["assessment_prepared"])
+                    self._touch("coordinator", "assessment_prepared", request["summary"])
+                    return True
             else:
+                self._assessment_evaluation(p)
                 draft = self.host.assessment.dump()
-                if draft["strategy"] != p["strategy"] or p["item"] and not any(
+                if p["strategy"] and draft["strategy"] != p["strategy"] or p["item"] and not any(
                         item["option_id"] == p["item"] and item["quantity"] == p["quantity"]
                         and item["room_id"] == p["room_id"] and item["home_id"] == self.host.home["id"]
                         for item in draft["selections"]):
@@ -772,7 +791,11 @@ class Coordination:
                 return (f"Draft {source.get('name', p['item'])} × {p['quantity']} for {p['room_id']}. Known published item subtotal: ${subtotal / 100:.2f}; "
                         "full delivered total and fit remain unverified. " + ("Open checks: " + ", ".join(pending) + ". " if pending else "")
                         + (setup["reason"] if setup["status"] != "suitable_to_review" else ""))[:540] + " No purchase or physical work was arranged."
-            return "Prepared a " + p["strategy"] + " review for the known need in room " + p["room_id"] + ". Existing selections remain drafts; measurements, total costs, fit, purchase, and physical completion are unverified."
+            draft = self.host.assessment.view("resident")
+            need = next(item["label"] for item in draft["needs"] if item["id"] == draft["need"])
+            return ("Updated your equipment draft: " + need + ". "
+                    + ("Budget: $" + f'{draft["constraints"]["budget_cents"] / 100:.2f}' + ". " if draft["constraints"]["budget_cents"] is not None else "")
+                    + "No purchase or setup was arranged. Fit and full costs remain unconfirmed.")
         return request["summary"]
 
     @staticmethod
@@ -1478,6 +1501,12 @@ class Coordination:
                                 or r["phase"] == 0 and (r["service"] != "none" or r["effects"] or r["status"] == "completed")
                                 or r["phase"] == 1 and (r["service"] != "prepared" or r["effects"] != ["reminder_scheduled"]
                                     or not any(reminder["target_message_id"] == p["item"] and reminder["hours"] == p["quantity"] for reminder in data["reminders"]))):
+                            fail()
+                    elif p["intent"] == "assess_home" and p["question"]:
+                        if (r["phase"] not in (0, 1) or r["order_id"] or r["message_ids"]
+                                or r["phase"] == 0 and (r["service"] != "none" or r["effects"])
+                                or r["phase"] == 1 and (r["service"] != "prepared" or r["effects"] != ["assessment_prepared"]
+                                    or r["status"] not in ("needs_clarification", "cancelled", "superseded", "failed"))):
                             fail()
                     elif p["intent"] not in HOSPITAL_INTENTS:
                         if r["phase"] == 0 and (r["service"] != "none" or r["effects"] or r["order_id"] or r["message_ids"]):

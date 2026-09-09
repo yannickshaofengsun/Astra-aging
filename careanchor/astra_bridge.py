@@ -1,4 +1,5 @@
 """Bounded, stateless Codex CLI text bridge; household state never changes here."""
+from copy import deepcopy
 import json
 import os
 from pathlib import Path
@@ -251,6 +252,23 @@ helper, and unrelated fields empty. Do not infer a delay or treat scheduling as 
 For assess_home with strategy replace, select only an exact context.assessment.evaluated_candidates
 item grounded in the request, with its requested quantity and room_id, even if the current
 strategy is keep. Keep, relocate, and adapt leave item empty. Unknown fit or fees remain unknown.
+Equipment requests and short corrections use assess_home with assessment_draft to fill the
+existing draft from explicitly stated facts. Select need from assessment.needs; a new need
+may use a matching supplied assessment.catalog_products entry. Check the proposed budget,
+space and preferences, not just old evaluated_candidates. Never invent products or dimensions.
+The assessment_draft wire schema wraps each supplied field as {"value": ...}; null at that
+field means omit and preserve its saved value. {"value": null} explicitly clears a nullable
+fact. Nested space/preferences/existing_item fields use the same wrappers. Omit entire
+assessment_draft with null for unrelated intents. Use only fields actually stated, retaining
+unmentioned draft facts on corrections. Record reported dimensions only, never measured or
+inferred from a sketch. Family setup is a proposed intention, never accepted help.
+Missing approach, product or room does not prevent saving useful stated fields. Use empty
+strategy and item if no approach/product was chosen; a stated product request may use replace.
+Put one necessary question in question alongside useful assessment_draft fields and leave
+item and recipients empty. Do not use clarify to discard useful equipment information.
+A budget correction can update the draft without selecting a product; old selected products
+that now conflict remain visible for review. No purchase, installer booking, or notification
+is authorized by asking to prepare a draft. Use only explicitly requested recipients.
 Only explicitly supplied administrative pharmacy intents may handle pharmacy paperwork;
 never infer or recommend a medicine, dose, substitution, diagnosis, or treatment.
 Hospital and prescription intents are simulated administration only, using supplied visit/order
@@ -268,8 +286,28 @@ administration only; public catalog listings do not become approved transactiona
 
 def interpret_request(context, message):
     schema = context['proposal_schema']
-    optional_fields = [key for key in ('visit_helpers', 'memory')
+    if isinstance(context.get('assessment'), dict) and 'rooms' in context['assessment']:
+        rooms = [room['id'] for room in context['assessment']['rooms']]
+        schema = deepcopy(schema)
+        if 'room_id' in schema['properties']:
+            schema['properties']['room_id']['enum'] = ['', *rooms]
+        if 'assessment_draft' in schema['properties']:
+            fields = schema['properties']['assessment_draft']['properties']
+            for group, keys in (('space', ('room_id',)), ('existing_item', ('current_room_id', 'target_room_id'))):
+                for key in keys:
+                    fields[group]['properties'][key]['enum'] = [None, *rooms]
+    optional_fields = [key for key in ('visit_helpers', 'memory', 'assessment_draft')
                        if key in schema.get('properties', {}) and key not in schema.get('required', [])]
+    if 'assessment_draft' in optional_fields:
+        def draft_wire(value):
+            if value.get('type') != 'object':
+                return value
+            return {**value, 'required': list(value['properties']), 'properties': {
+                key: {'anyOf': [{'type': 'object', 'additionalProperties': False,
+                    'required': ['value'], 'properties': {'value': draft_wire(part)}}, {'type': 'null'}]}
+                for key, part in value['properties'].items()}}
+        schema = {**schema, 'properties': {**schema['properties'],
+                  'assessment_draft': draft_wire(schema['properties']['assessment_draft'])}}
     if optional_fields:
         # Structured outputs require every property; null represents domain omission.
         schema = {**schema, 'required': [*schema.get('required', []), *optional_fields],
@@ -280,6 +318,18 @@ def interpret_request(context, message):
         for key in optional_fields:
             if proposal.get(key) is None:
                 proposal.pop(key, None)
+        if isinstance(proposal.get('assessment_draft'), dict):
+            def draft_values(value):
+                result = {}
+                for key, wrapped in value.items():
+                    if wrapped is None:
+                        continue
+                    if not isinstance(wrapped, dict) or set(wrapped) != {'value'}:
+                        raise BridgeError('The equipment draft did not match the supplied field format.')
+                    part = wrapped['value']
+                    result[key] = draft_values(part) if isinstance(part, dict) else part
+                return result
+            proposal['assessment_draft'] = draft_values(proposal['assessment_draft'])
     return proposal
 
 

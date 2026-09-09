@@ -402,6 +402,47 @@ def check_constraints():
     print("PASS: assessment constraints change evaluation; budget aggregation, measured-space limits, preferences, scoped setup replies, atomic rejection, and migration.")
 
 
+def check_reported_draft():
+    from careanchor.simulation import Household
+    home = Household(save_path=None)
+    assessment = home.assessment
+    before = assessment.dump()
+    for invalid in ({"budget_cents": True}, {"budget_cents": -1}, {"space": {"basis": "measured"}},
+                    {"space": {"width_in": float("nan")}}, {"space": {"room_id": "Imagined room"}},
+                    {"setup_acceptance": {"accepted": True}}, {"preferences": {"allow_drilling": "yes"}}):
+        try:
+            assessment.proposed(invalid)
+        except ValueError:
+            assert assessment.dump() == before
+        else:
+            raise AssertionError("Invalid resident report accepted")
+    proposed = assessment.proposed({"budget_cents": 5000, "space": {"width_in": 15},
+                                   "existing_item": {"description": "Bedside table"}})
+    assert assessment.dump() == before and proposed.state["constraints"]["space"]["basis"] == "reported"
+    assert proposed.state["constraints"]["space"]["room_id"] is None
+    located = proposed.proposed({"space": {"room_id": "Entrance"}})
+    assert located.state["constraints"]["space"]["width_in"] == 15
+    assert located.state["constraints"]["space"]["basis"] == "reported"
+    moved = located.proposed({"space": {"room_id": "Bedroom"}})
+    assert moved.state["constraints"]["space"]["width_in"] is None
+    cleared = proposed.proposed({"budget_cents": None})
+    assert cleared.state["constraints"]["budget_cents"] is None
+    assert cleared.state["existing_item"] == proposed.state["existing_item"]
+    assert type(assessment).restore(home, cleared.dump()).dump() == cleared.dump()
+    family_constraints = deepcopy(assessment.state["constraints"])
+    family_constraints.pop("recorded_by")
+    family_constraints["space"].pop("home_id")
+    family_constraints["setup"] = "resident"
+    assessment.apply("assessment_constraints", "family", family_constraints, actor_id="alex")
+    corrected = assessment.proposed({"budget_cents": 5000})
+    assert corrected.state["constraints"]["recorded_by"] == "alex"
+    assert corrected.evaluate("ikea_nissafors")["checks"]["setup"]["status"] == "unknown"
+    agreed = corrected.proposed({"setup": "resident"})
+    assert agreed.state["constraints"]["recorded_by"] == "resident"
+    assert agreed.evaluate("ikea_nissafors")["checks"]["setup"]["status"] == "suitable_to_review"
+
+
 if __name__ == "__main__":
+    check_reported_draft()
     check()
     check_constraints()
