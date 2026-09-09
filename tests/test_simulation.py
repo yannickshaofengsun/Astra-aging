@@ -1,7 +1,7 @@
-"""Run: python3 test_simulation.py"""
+"""Run: python3 -m tests.test_simulation"""
 
 import json
-from simulation import Household, InvalidAction
+from careanchor.simulation import Household, InvalidAction
 
 
 def rejects(fn):

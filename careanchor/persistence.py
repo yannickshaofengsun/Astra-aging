@@ -91,14 +91,14 @@ def save_household(host, path):
 
 
 def load_household(path):
-    from simulation import Household, home_context
-    from mission import Mission
-    from coordination import Coordination
-    from meal import Meal
-    from assessment import Assessment
-    from hospital import Hospital
-    from family_edition import FamilyEdition
-    from week import PROFILE_FIELDS, PROFILES, SCENARIOS
+    from .simulation import Household, home_context
+    from .mission import Mission
+    from .coordination import Coordination
+    from .meal import Meal
+    from .assessment import Assessment
+    from .hospital import Hospital
+    from .family_edition import FamilyEdition
+    from .week import PROFILE_FIELDS, PROFILES, SCENARIOS
 
     def pairs(items):
         result = {}

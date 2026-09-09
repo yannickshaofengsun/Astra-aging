@@ -123,7 +123,7 @@ _OPTIONS = [
                        "Obtain provider acceptance before describing help as arranged."],
     },
 ]
-_OPTIONS += json.loads((Path(__file__).resolve().parent / "catalog/online-products.json").read_text())
+_OPTIONS += json.loads((Path(__file__).resolve().parents[1] / "catalog/online-products.json").read_text())
 
 
 def match_options(need="home_storage", budget_cents=None, channel="all"):

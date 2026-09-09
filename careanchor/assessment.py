@@ -5,7 +5,7 @@ from hashlib import sha256
 import json
 from math import isfinite
 
-from real_world import NEEDS, match_options
+from .real_world import NEEDS, match_options
 
 
 STRATEGIES = {
@@ -49,7 +49,7 @@ class Assessment:
         home = self.host.home
         if home_id is not None and home_id != home["id"]:
             # Imported only during validation after simulation has finished loading.
-            from simulation import home_context
+            from .simulation import home_context
             home = home_context(home_id)
         return [{"id": room["label"], "label": room["label"], "use": room["use"]}
                 for room in home["rooms"]]

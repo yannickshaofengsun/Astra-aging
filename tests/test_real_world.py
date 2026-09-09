@@ -1,6 +1,6 @@
-"""Run with python3 test_real_world.py; no external services are called."""
+"""Run with python3 -m tests.test_real_world; no external services are called."""
 
-from real_world import NEEDS, match_options
+from careanchor.real_world import NEEDS, match_options
 
 
 def check():

@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 import tempfile
 
-EDITION_DIR = Path(__file__).resolve().parent / ".runtime" / "editions"
+EDITION_DIR = Path(__file__).resolve().parents[1] / ".runtime" / "editions"
 ACTORS = {"alex": "Alex", "morgan": "Morgan"}
 FIXTURES = {
     "alex_tomatoes": {"owner": "alex", "kind": "photo", "title": "Tomatoes on the balcony",

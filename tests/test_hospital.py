@@ -2,9 +2,9 @@
 from copy import deepcopy
 import json
 
-from coordination import PROPOSAL_FIELDS
-from hospital import Hospital, PERMISSIONS
-from simulation import Household
+from careanchor.coordination import PROPOSAL_FIELDS
+from careanchor.hospital import Hospital, PERMISSIONS
+from careanchor.simulation import Household
 
 
 def reject(call):

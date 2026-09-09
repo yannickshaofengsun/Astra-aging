@@ -1,6 +1,6 @@
-"""Run: python3 test_week.py — integrated permission, evidence and privacy checks."""
+"""Run: python3 -m tests.test_week — integrated permission, evidence and privacy checks."""
 import json
-from simulation import Household, InvalidAction
+from careanchor.simulation import Household, InvalidAction
 
 
 def check():

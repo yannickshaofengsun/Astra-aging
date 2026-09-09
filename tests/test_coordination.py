@@ -1,12 +1,12 @@
-"""Run: python3 test_coordination.py. No model, server, or external service call."""
+"""Run: python3 -m tests.test_coordination. No model, server, or external service call."""
 from copy import deepcopy
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from coordination import Coordination, PROPOSAL_FIELDS
-from simulation import Household
+from careanchor.coordination import Coordination, PROPOSAL_FIELDS
+from careanchor.simulation import Household
 
 
 def proposal(intent="order_supply", **values):
@@ -178,7 +178,7 @@ def check_rejection_cancellation_and_restore():
 
 
 def check_reported_order_summaries():
-    from persistence import load_household, save_household
+    from careanchor.persistence import load_household, save_household
     home = Household()
     c = home.coordination
     setup(home)
@@ -261,7 +261,7 @@ def check_named_travel_and_meal():
 
 
 def check_hospital_and_assessment():
-    from hospital import PERMISSIONS
+    from careanchor.hospital import PERMISSIONS
     home = Household()
     c = home.coordination
     setup(home)
@@ -402,7 +402,7 @@ def check_product_selection():
 
 
 def hospital_household(identity="visit", recipients=None):
-    from hospital import PERMISSIONS
+    from careanchor.hospital import PERMISSIONS
     home = Household()
     setup(home)
     home.hospital.apply("hospital_permissions", "resident", dict.fromkeys(PERMISSIONS, True))
@@ -436,7 +436,7 @@ def check_hospital_information():
     own_state(home)
 
     blocked = Household()
-    from hospital import PERMISSIONS
+    from careanchor.hospital import PERMISSIONS
     blocked.hospital.apply("hospital_permissions", "resident", dict.fromkeys(PERMISSIONS, True))
     request(blocked, "permission", proposal("hospital_coordination", item="visit-001", helper="alex", recipients=["morgan"]))
     run(blocked, "permission")
@@ -448,7 +448,7 @@ def check_hospital_information():
 
 
 def check_split_hospital_helpers():
-    from hospital import PERMISSIONS
+    from careanchor.hospital import PERMISSIONS
     home = Household()
     c = home.coordination
     setup(home)
@@ -542,7 +542,7 @@ def check_agreed_reminders():
 
 
 def check_memory_and_dated_availability():
-    from persistence import save_household, load_household
+    from careanchor.persistence import save_household, load_household
 
     home = Household()
     c = home.coordination

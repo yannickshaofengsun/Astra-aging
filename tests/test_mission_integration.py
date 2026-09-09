@@ -1,13 +1,13 @@
-"""Run: python3 test_mission_integration.py. No live model or canonical state."""
+"""Run: python3 -m tests.test_mission_integration. No live model or canonical state."""
 from copy import deepcopy
 from hashlib import sha256
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from mission import PERMISSIONS
-from persistence import _encoded, load_household
-from simulation import Household, InvalidAction
+from careanchor.mission import PERMISSIONS
+from careanchor.persistence import _encoded, load_household
+from careanchor.simulation import Household, InvalidAction
 
 
 def event(host, action, role="resident", **payload):

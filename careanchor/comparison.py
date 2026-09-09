@@ -105,7 +105,7 @@ def _next_control(household):
 
 def _replay(profile_id, mode):
     # Local import avoids the Household.comparison -> comparison -> Household cycle.
-    from simulation import Household
+    from .simulation import Household
 
     household = Household()
     inputs, failures = [], []
@@ -165,7 +165,7 @@ def _replay(profile_id, mode):
 
 def compare_households():
     """Fresh authored fixtures only; neither the active plan nor its choices mutate."""
-    from simulation import Household
+    from .simulation import Household
 
     result = {
         "title": "Matched fictional household weeks",

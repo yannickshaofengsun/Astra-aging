@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 from unittest.mock import patch
 
-from imessage_bridge import Bridge, _SCRIPT, _attributed_text
+from careanchor.imessage_bridge import Bridge, _SCRIPT, _attributed_text
 
 
 # Only the consented, fictional setup message; no account or participant metadata.
@@ -156,7 +156,7 @@ def check():
 
         # Strings remain argument data; duplicate IDs never repeat a send.
         body = 'A reply " & do shell script "unexpected"\nwith a second line'
-        with patch("imessage_bridge.subprocess.run", return_value=subprocess.CompletedProcess([], 0, "submitted\n", "")) as run:
+        with patch("careanchor.imessage_bridge.subprocess.run", return_value=subprocess.CompletedProcess([], 0, "submitted\n", "")) as run:
             sent = bridge.send_once("reply-1", "resident", body)
             assert sent == {"status": "submitted", "duplicate": False, "delivery": "unknown", "read": "unknown"}
             assert run.call_args.args[0] == ["/usr/bin/osascript", "-", "account-test", "resident@example.invalid", body]
@@ -166,12 +166,12 @@ def check():
             rejects(lambda: bridge.send_once("reply-1", "resident", "Changed"), "cannot be reused")
             rejects(lambda: bridge.send_once("reply-2", "unapproved", "Hello"), "Invalid")
             assert run.call_count == 1
-        with patch("imessage_bridge.subprocess.run", side_effect=subprocess.TimeoutExpired("osascript", 20)) as run:
+        with patch("careanchor.imessage_bridge.subprocess.run", side_effect=subprocess.TimeoutExpired("osascript", 20)) as run:
             assert bridge.send_once("reply-uncertain", "alex", "Update")["status"] == "uncertain"
             assert restarted.send_once("reply-uncertain", "alex", "Update")["duplicate"] is True
             assert run.call_count == 1
         # A write-ahead record survives an interrupted caller even if no status update runs.
-        with patch("imessage_bridge.subprocess.run", side_effect=KeyboardInterrupt) as run:
+        with patch("careanchor.imessage_bridge.subprocess.run", side_effect=KeyboardInterrupt) as run:
             try:
                 bridge.send_once("reply-interrupted", "resident", "Update")
             except KeyboardInterrupt:
@@ -193,7 +193,7 @@ def check():
         rejects(lambda: Bridge({**self_config, "enabled": False}, self_test=True), "single resident")
         rejects(lambda: Bridge(self_config, self_test=1), "single resident")
         rejects(lambda: self_demo.poll_once(intake), "fresh baseline")
-        with patch("imessage_bridge.subprocess.run") as run:
+        with patch("careanchor.imessage_bridge.subprocess.run") as run:
             rejects(lambda: self_demo.send_once("self-unbased", "resident", "Demo update"), "fresh baseline")
             assert not run.called
         insert("Astra: Existing history is excluded", is_from_me=1)
@@ -250,7 +250,7 @@ def check():
         assert received[-1] == archived_attempts[0]
         assert received[-1]["text"] == "Please arrange my fictional visit. 🏠"
         assert restored_self.poll_once(intake)["accepted"] == 0
-        with patch("imessage_bridge.subprocess.run", return_value=subprocess.CompletedProcess([], 0, "submitted\n", "")) as run:
+        with patch("careanchor.imessage_bridge.subprocess.run", return_value=subprocess.CompletedProcess([], 0, "submitted\n", "")) as run:
             rejects(lambda: self_demo.send_once("self-loop", "resident", "Astra: generated reply"), "reserved")
             assert not run.called
             assert self_demo.send_once("self-update", "resident", "Astra update: driver requested")["duplicate"] is False
@@ -284,7 +284,7 @@ def check():
         assert [(item["actor_id"], item["text"]) for item in received[before_alias:]] == [
             ("resident", "Primary request"), ("resident", "Alias request")]
         assert aliases.poll_once(intake)["accepted"] == 0
-        with patch("imessage_bridge.subprocess.run", return_value=subprocess.CompletedProcess([], 0, "submitted\n", "")) as run:
+        with patch("careanchor.imessage_bridge.subprocess.run", return_value=subprocess.CompletedProcess([], 0, "submitted\n", "")) as run:
             aliases.send_once("alias-update", "resident", "Astra update: request received")
             assert run.call_args.args[0][3] == "resident@example.invalid"
         rejects(lambda: self_demo.poll_once(intake), "fresh baseline")
@@ -293,7 +293,7 @@ def check():
         changed["recipients"][0]["account_id"] = "different-account"
         changed_bridge = Bridge(changed, state_path, database_path=source_path)
         rejects(lambda: changed_bridge.poll_once(intake), "fresh baseline")
-        with patch("imessage_bridge.subprocess.run") as run:
+        with patch("careanchor.imessage_bridge.subprocess.run") as run:
             rejects(lambda: changed_bridge.send_once("new-reply", "resident", "Hello"), "fresh baseline")
             assert not run.called
         changed_bridge.baseline()
@@ -305,7 +305,7 @@ def check():
         # Failure to durably record an outbound claim prevents any send invocation.
         with sqlite3.connect(state_path) as db:
             db.execute("CREATE TRIGGER block_send BEFORE INSERT ON outbox BEGIN SELECT RAISE(FAIL,'synthetic write failure'); END")
-        with patch("imessage_bridge.subprocess.run") as run:
+        with patch("careanchor.imessage_bridge.subprocess.run") as run:
             try:
                 changed_bridge.send_once("write-fails", "resident", "Hello")
             except sqlite3.Error:

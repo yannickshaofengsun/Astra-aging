@@ -1,13 +1,13 @@
-"""Run: python3 test_household_integration.py. Isolated households; no model or server."""
+"""Run: python3 -m tests.test_household_integration. Isolated households; no model or server."""
 from copy import deepcopy
 from hashlib import sha256
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from coordination import PROPOSAL_FIELDS
-from persistence import _encoded
-from simulation import Household, InvalidAction
+from careanchor.coordination import PROPOSAL_FIELDS
+from careanchor.persistence import _encoded
+from careanchor.simulation import Household, InvalidAction
 
 
 def event(host, action, payload=None, role="resident", actor_id=None):
@@ -131,7 +131,7 @@ def check():
 
 
 def check_reply_resume():
-    from hospital import PERMISSIONS
+    from careanchor.hospital import PERMISSIONS
 
     def run(host, identity):
         for _ in range(12):

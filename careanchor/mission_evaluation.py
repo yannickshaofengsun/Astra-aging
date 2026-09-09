@@ -4,7 +4,7 @@ import json
 
 
 def _case(case_id, label):
-    from simulation import Household
+    from .simulation import Household
 
     household = Household(save_path=None)
     community = deepcopy(household.week.community)

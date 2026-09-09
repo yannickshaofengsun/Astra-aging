@@ -1,8 +1,6 @@
 # CareAnchor: one-minute narration script
 
-The first buyer is a hypothesis from the current discovery plan, not a validated paying-customer claim. Intended impact has not yet been measured in real households.
-
-Recorded September 8, 2026. Actual app interactions, two live GPT-6-Astra requests, fictional household/provider data, and on-screen captions. The current video has no audio; the script below is ready for narration later. Model waiting time and pauses are shortened. This recording uses the web rehearsal; it does not show an Apple Messages round trip.
+Proposed narration for the silent video. See [recording notes](README.md) for the demonstrated scope and evidence limits.
 
 ## 1. The first customer: care managers
 

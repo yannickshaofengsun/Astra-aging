@@ -1,12 +1,12 @@
-"""Run with python3 -B test_assessment.py; no services or transactions are used."""
+"""Run with python3 -m tests.test_assessment; no services or transactions are used."""
 
 from copy import deepcopy
 from types import SimpleNamespace
 from unittest.mock import patch
 
-import assessment
-from assessment import Assessment
-from real_world import match_options
+from careanchor import assessment
+from careanchor.assessment import Assessment
+from careanchor.real_world import match_options
 
 
 def check():
@@ -382,7 +382,7 @@ def check_constraints():
             raise AssertionError(bad)
     assert match_options("home_storage") == source_before
     # Withdrawal cannot revive an earlier setup promise when availability returns.
-    from simulation import Household
+    from careanchor.simulation import Household
     live_host = Household()
     live = live_host.assessment
     live.apply("assessment_strategy", "resident", {"strategy": "replace"})

@@ -2,8 +2,8 @@
 
 from copy import deepcopy
 import json
-from mission import Mission, PERMISSIONS, BACKUP
-from simulation import Household
+from careanchor.mission import Mission, PERMISSIONS, BACKUP
+from careanchor.simulation import Household
 
 
 def fixture():

@@ -258,7 +258,7 @@ class WeekPlan:
             if reports:
                 paperwork_owner = reports[-1]["actor"]
                 if paperwork_owner == "family" and mission.get("known", {}).get("backup") == "accepted":
-                    from mission import BACKUP
+                    from .mission import BACKUP
                     paperwork_owner = BACKUP
         checklist = ["Appointment letter", "Papers requested for the visit"]
         hospital = getattr(getattr(self.host, "hospital", None), "state", {})

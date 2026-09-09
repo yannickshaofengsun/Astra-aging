@@ -1,9 +1,9 @@
-"""Run with: python3 test_comparison.py (no model call or external action)."""
+"""Run with: python3 -m tests.test_comparison (no model call or external action)."""
 from copy import deepcopy
 import json
 from unittest.mock import patch
 
-from comparison import _audit, _compare, compare_households
+from careanchor.comparison import _audit, _compare, compare_households
 
 
 def check_claims():
@@ -33,7 +33,7 @@ def check_claims():
 
 
 def check_replays():
-    from simulation import Household
+    from careanchor.simulation import Household
 
     active = Household()
     active.event("week_inject", "resident", active.revision, {"scenario": "appointment_conflict"})

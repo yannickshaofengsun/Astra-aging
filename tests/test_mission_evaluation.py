@@ -1,10 +1,10 @@
-"""Run with python3 test_mission_evaluation.py; no model or external service."""
+"""Run with python3 -m tests.test_mission_evaluation; no model or external service."""
 from copy import deepcopy
 import json
 from unittest.mock import patch
 
-from mission_evaluation import evaluate_missions
-from simulation import Household
+from careanchor.mission_evaluation import evaluate_missions
+from careanchor.simulation import Household
 
 
 def check_evaluation():

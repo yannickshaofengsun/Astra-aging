@@ -1,4 +1,4 @@
-"""Run with python3 -m unittest test_server. No model calls or dependencies."""
+"""Run with python3 -m tests.test_server. No model calls or dependencies."""
 import http.client
 import json
 from pathlib import Path
@@ -8,9 +8,9 @@ import threading
 import unittest
 from unittest.mock import patch
 
-import astra_bridge as bridge
-from server import MAX_BODY, MAX_JSON_RESPONSE, RequestError, Server
-from simulation import Household
+from careanchor import astra_bridge as bridge
+from careanchor.server import MAX_BODY, MAX_JSON_RESPONSE, RequestError, Server
+from careanchor.simulation import Household
 
 
 class ServerTests(unittest.TestCase):
@@ -52,7 +52,7 @@ class ServerTests(unittest.TestCase):
         self.assertNotIn('reason', accepted['appointment'])
 
     def test_only_current_approved_family_pdf_downloads(self):
-        import family_edition
+        from careanchor import family_edition
         from types import SimpleNamespace
 
         edition = family_edition.FamilyEdition(SimpleNamespace())
@@ -88,7 +88,7 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(self.request(url)[0], 404)
 
     def test_family_physical_reports_update_resident_notice(self):
-        from imessage_bridge import Bridge as MessagesBridge
+        from careanchor.imessage_bridge import Bridge as MessagesBridge
         config = {'enabled': True, 'recipients': [{'actor_id': 'resident',
             'handle': 'resident@example.invalid', 'account_id': 'synthetic-account',
             'inbound_account': 'synthetic-inbound'}]}
@@ -119,7 +119,7 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(send.call_count, 2)
 
     def test_family_event_send_allows_concurrent_http_revocation(self):
-        from imessage_bridge import Bridge as MessagesBridge
+        from careanchor.imessage_bridge import Bridge as MessagesBridge
         config = {'enabled': True, 'recipients': [{'actor_id': 'resident',
             'handle': 'resident@example.invalid', 'account_id': 'synthetic-account',
             'inbound_account': 'synthetic-inbound'}]}
@@ -256,7 +256,7 @@ class ServerTests(unittest.TestCase):
             snapshot = model.call_args.args[0]
             family['coordination'] = json.loads(json.dumps(self.server.household.coordination.model_view('family')))
             self.assertEqual(json.loads(json.dumps(snapshot)), family)
-            from real_world import NEEDS
+            from careanchor.real_world import NEEDS
             catalog = snapshot['public_discovery']
             self.assertEqual({group['need'] for group in catalog}, set(NEEDS))
             self.assertTrue(all(group['budget_cents'] is None for group in catalog))
@@ -628,7 +628,8 @@ class ServerTests(unittest.TestCase):
             send.assert_not_called()
 
     def test_static_allowlist(self):
-        for path in ('/server.py', '/.codex/config.toml', '/assets/../server.py',
+        for path in ('/server.py', '/careanchor/server.py', '/tests/test_server.py',
+                     '/.codex/config.toml', '/assets/../server.py',
                      '/assets/%2e%2e/server.py', '/assets/home.png/../../server.py'):
             self.assertEqual(self.request(path)[0], 404)
 
@@ -694,13 +695,13 @@ class MessagesPipelineTests(unittest.TestCase):
         config = {'enabled': True, 'recipients': [{'actor_id': 'resident',
             'handle': 'resident@example.invalid', 'account_id': 'synthetic-account',
             'inbound_account': 'synthetic-inbound'}]}
-        with patch('server.MessagesBridge') as adapter:
+        with patch('careanchor.server.MessagesBridge') as adapter:
             with Server(0, messages_config=config, messages_self_test=True):
                 adapter.assert_called_once_with(config, self_test=True)
                 adapter.return_value.baseline.assert_not_called()
                 adapter.return_value.poll_once.assert_not_called()
                 adapter.return_value.send_once.assert_not_called()
-        result = bridge.subprocess.run([sys.executable, str(Path(__file__).with_name('server.py')),
+        result = bridge.subprocess.run([sys.executable, str(Path(__file__).resolve().parents[1] / 'server.py'),
                                         '--messages-self-test'], capture_output=True, timeout=5)
         self.assertEqual(result.returncode, 2)
         self.assertIn(b'requires --messages-config and --messages-poll', result.stderr)
@@ -725,7 +726,7 @@ class MessagesPipelineTests(unittest.TestCase):
                 with Server(0, save_path=path, messages_config=config) as restored, \
                         patch.object(bridge, 'interpret_request') as model, \
                         patch.object(restored.messages, '_fingerprint', return_value='synthetic-fingerprint'), \
-                        patch('imessage_bridge.subprocess.run', return_value=SimpleNamespace(
+                        patch('careanchor.imessage_bridge.subprocess.run', return_value=SimpleNamespace(
                             returncode=0 if outcome == 'submitted' else 1, stdout='submitted')) as transport:
                     restored.messages.state_path = Path(directory) / 'outbox.sqlite3'
                     db = restored.messages._ledger(create=True)
@@ -796,7 +797,7 @@ class MessagesPipelineTests(unittest.TestCase):
             self.assertEqual(statuses[1]['status'], 'unavailable')
             self.assertNotIn('Private transport detail', str(statuses))
             self.assertEqual(server.messages_poll_status['status'], 'stopped')
-        result = bridge.subprocess.run([sys.executable, str(Path(__file__).with_name('server.py')),
+        result = bridge.subprocess.run([sys.executable, str(Path(__file__).resolve().parents[1] / 'server.py'),
                                         '--messages-poll'], capture_output=True, timeout=5)
         self.assertEqual(result.returncode, 2)
         self.assertIn(b'requires --messages-config', result.stderr)
@@ -875,7 +876,7 @@ class MessagesPipelineTests(unittest.TestCase):
                 self.assertEqual(outcome['delivery'], 'unknown')
                 send.assert_called_once_with(helper['source_id'] + '-outcome', 'alex',
                     'Household simulation: Which of your offered responsibilities do you mean?')
-            with patch('persistence.save_household', side_effect=OSError('synthetic save failure')), \
+            with patch('careanchor.persistence.save_household', side_effect=OSError('synthetic save failure')), \
                     patch.object(bridge, 'interpret_request', return_value=proposal):
                 self.assertFalse(server.accept_message(incoming | {'source_id': 'imsg-not-durable'}))
             self.assertFalse(server.coordination_gate.locked())
@@ -943,7 +944,7 @@ class BridgeTests(unittest.TestCase):
             self.assertEqual(bridge.interpret_request(context, 'Help with delivery.'), proposal)
 
     def test_optional_helpers_use_required_nullable_wire_schema(self):
-        from coordination import PROPOSAL_SCHEMA
+        from careanchor.coordination import PROPOSAL_SCHEMA
         original = json.loads(json.dumps(PROPOSAL_SCHEMA))
         context = {'proposal_schema': PROPOSAL_SCHEMA}
         helpers = {'driver': 'alex', 'companion': 'morgan', 'return': 'alex'}
@@ -965,7 +966,7 @@ class BridgeTests(unittest.TestCase):
             self.assertEqual(PROPOSAL_SCHEMA, original)
 
     def test_optional_memory_wire_preserves_explicit_forgetting(self):
-        from coordination import PROPOSAL_SCHEMA
+        from careanchor.coordination import PROPOSAL_SCHEMA
         forget = {'key': 'messages', 'value': None, 'audience': []}
         for memory in (None, forget):
             proposal = ServerTests.supply_proposal() | {'memory': memory, 'visit_helpers': None}

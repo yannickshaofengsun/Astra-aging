@@ -4,8 +4,8 @@ from copy import deepcopy
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
-import family_edition as module
-from family_edition import FamilyEdition, FIXTURES
+from careanchor import family_edition as module
+from careanchor.family_edition import FamilyEdition, FIXTURES
 
 
 def act(edition, action, actor="resident", **payload):

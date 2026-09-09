@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 from types import SimpleNamespace
-from meal import Meal
+from careanchor.meal import Meal
 
 
 class CoordinationStub:

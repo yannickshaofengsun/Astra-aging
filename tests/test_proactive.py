@@ -5,11 +5,11 @@ import threading
 import unittest
 from unittest.mock import patch
 
-import astra_bridge
-from coordination import PROPOSAL_FIELDS
-from hospital import PERMISSIONS
-from server import Server
-from test_hospital import request as seed_request
+from careanchor import astra_bridge
+from careanchor.coordination import PROPOSAL_FIELDS
+from careanchor.hospital import PERMISSIONS
+from careanchor.server import Server
+from .test_hospital import request as seed_request
 
 
 def proposal():
@@ -116,7 +116,7 @@ class ProactiveTests(unittest.TestCase):
         watcher, host = self.server.proactive, self.server.household
         watcher.set_enabled(True)
         before = host.hospital.dump()
-        with patch('persistence.save_household', side_effect=OSError('Supplied local save failure')):
+        with patch('careanchor.persistence.save_household', side_effect=OSError('Supplied local save failure')):
             with patch.object(astra_bridge, 'interpret_request') as model:
                 self.assertEqual(watcher.step()['status'], 'blocked')
                 self.assertEqual(host.mission_persistence['status'], 'save_error')

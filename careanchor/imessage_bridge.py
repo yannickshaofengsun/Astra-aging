@@ -1,7 +1,7 @@
 """Opt-in, one-to-one Apple Messages transport; no runner or agent lives here.
 
 Nothing is read or sent on import. Private configuration and the cursor/outbox
-belong under .runtime. See .coordination/imessage-bridge-contract.md.
+belong under .runtime. See docs/running.md#optional-apple-messages at the repository root.
 """
 
 from contextlib import closing, contextmanager
@@ -110,7 +110,7 @@ class Bridge:
             raise ValueError("Self-chat demo requires an enabled single resident mapping.")
         self.self_test = self_test
         self.config = json.loads(json.dumps(config)) if config is not None else None
-        self.state_path = Path(state_path or Path(__file__).parent / ".runtime/imessage-bridge.sqlite3")
+        self.state_path = Path(state_path or Path(__file__).resolve().parents[1] / ".runtime/imessage-bridge.sqlite3")
         self.database_path = Path(database_path or Path.home() / "Library/Messages/chat.db")
         if config is None:
             self.recipients = {}

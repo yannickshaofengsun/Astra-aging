@@ -4,16 +4,16 @@ from copy import deepcopy
 import json
 from pathlib import Path
 from threading import RLock
-from week import WeekPlan
-from real_world import NEEDS, match_options
-from mission import Mission
-from coordination import Coordination, ACTORS
-from meal import Meal
-from assessment import Assessment
-from hospital import Hospital
-from family_edition import FamilyEdition
+from .week import WeekPlan
+from .real_world import NEEDS, match_options
+from .mission import Mission
+from .coordination import Coordination, ACTORS
+from .meal import Meal
+from .assessment import Assessment
+from .hospital import Hospital
+from .family_edition import FamilyEdition
 
-ASSETS = Path(__file__).resolve().parent / "assets"
+ASSETS = Path(__file__).resolve().parents[1] / "assets"
 PUBLIC_DISCOVERY = [match_options(need) for need in NEEDS]
 
 
@@ -198,7 +198,7 @@ class Household:
             })
 
     def comparison(self):
-        from comparison import compare_households
+        from .comparison import compare_households
         return compare_households()
 
     def _sync_memory_context(self):
@@ -329,7 +329,7 @@ class Household:
     def _persist_mission(self):
         if self.save_path is None:
             return
-        from persistence import save_household
+        from .persistence import save_household
         try:
             save_household(self, self.save_path)
             self.mission_persistence.update(status="saved", message="Household saved locally. Restart restores facts without repeating actions.")
@@ -337,7 +337,7 @@ class Household:
             self.mission_persistence.update(status="save_error", message="The household changed, but its local save failed.")
 
     def _restore_mission(self):
-        from persistence import load_household
+        from .persistence import load_household
         restored = load_household(self.save_path)
         revision, context = max(self.revision, restored.revision) + 1, max(self.context_revision, restored.context_revision) + 1
         for name in ("home", "appointment", "transport", "documents", "_actual_document_location",
