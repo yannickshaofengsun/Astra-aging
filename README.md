@@ -10,7 +10,7 @@ This hackathon prototype demonstrates hospital coordination. A resident asks for
 
 [![CareAnchor demo](demo/preview.jpg)](demo/careanchor-demo.mp4)
 
-The video has captions and no audio. It shows recorded app interactions with live GPT-6-Astra interpretations and fictional household data. It predates the optional visit-change monitoring below.
+The video has on-screen labels and AI-generated narration. It shows recorded app interactions with live GPT-6-Astra interpretations and fictional household data. It predates the optional visit-change monitoring below.
 
 ## Run locally
 

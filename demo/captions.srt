@@ -1,23 +1,23 @@
 1
 00:00:00,000 --> 00:00:09,000
-We are starting with independent care managers helping families support an older adult. Today, a changed appointment means another round of calls and confirmations.
+This is CareAnchor. It helps older adults and their families work out who's doing what, without another round of calls.
 
 2
 00:00:09,000 --> 00:00:18,000
-We are building CareAnchor, an AI coordinator that lets older adults ask for help naturally, while the people supporting them share one current plan.
+The idea is to plan ahead: who can help, what needs following up, and what would make the home safer.
 
 3
 00:00:18,000 --> 00:00:30,000
-Today’s prototype connects GPT six Astra, household memory, and a family dashboard. A resident asks for hospital support. CareAnchor creates separate requests for driving, accompaniment, and the return ride.
+Here, someone needs help with a hospital visit. CareAnchor splits it into a ride there, someone to go with them, and a ride home.
 
 4
 00:00:30,000 --> 00:00:42,000
-Alex accepts the outbound drive. Morgan accepts accompaniment. The return ride stays pending until Alex agrees. The resident then receives an update grounded in those actual replies.
+Alex takes the first drive. Morgan agrees to go along. The ride home stays open until Alex says yes. Now the resident can see what's covered.
 
 5
 00:00:42,000 --> 00:00:52,000
-When the hospital changes the time and location, CareAnchor retrieves the new notice. Old acceptances are cancelled, and the family must confirm the new plan.
+Then the hospital changes the appointment. CareAnchor updates the details and asks the family to confirm again, so nobody relies on the old plan.
 
 6
 00:00:52,000 --> 00:01:00,000
-Our goal is less coordination work and more independence. Next, we will measure time spent and missed handoffs in real household pilots.
+Our goal is to reduce the total unpaid time families spend on care, while older adults keep their independence.

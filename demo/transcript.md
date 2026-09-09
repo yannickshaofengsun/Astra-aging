@@ -1,27 +1,27 @@
 # CareAnchor: one-minute narration script
 
-Proposed narration for the silent video. See [recording notes](README.md) for the demonstrated scope and evidence limits.
+Narration for the submitted video, generated with the OpenAI Marin voice. See [recording notes](README.md) for the demonstrated scope.
 
-## 1. The first customer: care managers
+## 1. Meet CareAnchor
 
-We are starting with independent care managers helping families support an older adult. Today, a changed appointment means another round of calls and confirmations.
+This is CareAnchor. It helps older adults and their families work out who's doing what, without another round of calls.
 
-## 2. What we want to build
+## 2. Plan ahead at home
 
-We are building CareAnchor, an AI coordinator that lets older adults ask for help naturally, while the people supporting them share one current plan.
+The idea is to plan ahead: who can help, what needs following up, and what would make the home safer.
 
-## 3. What works today
+## 3. Ask for help
 
-Today’s prototype connects GPT six Astra, household memory, and a family dashboard. A resident asks for hospital support. CareAnchor creates separate requests for driving, accompaniment, and the return ride.
+Here, someone needs help with a hospital visit. CareAnchor splits it into a ride there, someone to go with them, and a ride home.
 
-## 4. Every responsibility needs its own reply
+## 4. Who is doing what
 
-Alex accepts the outbound drive. Morgan accepts accompaniment. The return ride stays pending until Alex agrees. The resident then receives an update grounded in those actual replies.
+Alex takes the first drive. Morgan agrees to go along. The ride home stays open until Alex says yes. Now the resident can see what's covered.
 
-## 5. When the facts change, the plan reopens
+## 5. When plans change
 
-When the hospital changes the time and location, CareAnchor retrieves the new notice. Old acceptances are cancelled, and the family must confirm the new plan.
+Then the hospital changes the appointment. CareAnchor updates the details and asks the family to confirm again, so nobody relies on the old plan.
 
-## 6. The impact we want to test
+## 6. Less unpaid family care time
 
-Our goal is less coordination work and more independence. Next, we will measure time spent and missed handoffs in real household pilots.
+Our goal is to reduce the total unpaid time families spend on care, while older adults keep their independence.
