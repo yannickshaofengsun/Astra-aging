@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 from careanchor import astra_bridge
-from careanchor.coordination import PROPOSAL_FIELDS
+from careanchor.coordination import PROPOSAL_FIELDS, Coordination
 from careanchor.hospital import PERMISSIONS
 from careanchor.server import Server
 from .test_hospital import request as seed_request
@@ -48,13 +48,73 @@ class ProactiveTests(unittest.TestCase):
         self.server.server_close()
         self.directory.cleanup()
 
+    def test_saved_watching_continues_after_restart_and_a_late_reply(self):
+        self.server.proactive.set_enabled(True)
+        with patch.object(astra_bridge, 'interpret_request', return_value=proposal()) as model:
+            with Server(0, save_path=self.path) as restarted:
+                self.assertTrue(restarted.proactive.view()['enabled'])
+                self.assertEqual(restarted.proactive.step()['status'], 'waiting_helper')
+                host = restarted.household
+                duties = [d for d in host.hospital.state['commitments'] if d['status'] == 'requested']
+                host.event('coordination_schedule_reminder', 'resident', host.revision,
+                           {'message_id': duties[0]['message_id'], 'hours': 3})
+                request_count = len(host.coordination.state['requests'])
+            with Server(0, save_path=self.path) as continued:
+                host = continued.household
+                self.assertEqual(continued.proactive.step()['status'], 'waiting_helper')
+                host.event('coordination_advance_clock', 'resident', host.revision, {'minutes': 180})
+                self.assertEqual(host.coordination.state['reminders'][0]['status'], 'issued')
+                reply = {'role': 'family', 'actor_id': 'morgan', 'revision': host.revision,
+                         'reply_id': 'late-morgan', 'message': 'Yes, I can cover all three arrangements.'}
+                decisions = {'decisions': [{'message_id': d['message_id'], 'status': 'accepted'} for d in duties],
+                             'question': ''}
+                with patch.object(astra_bridge, 'interpret_helper_reply', return_value=decisions) as reply_model:
+                    self.assertEqual(continued.recipient_reply(reply)[0], 200)
+                    self.assertEqual(continued.proactive.view()['status'], 'completed')
+                    before = host.coordination.dump()
+                    self.assertEqual(continued.recipient_reply(reply)[0], 200)
+                    self.assertEqual(host.coordination.dump(), before)
+                    reply_model.assert_called_once()
+                self.assertEqual(len(host.coordination.state['requests']), request_count)
+                self.assertIn('Attendance and physical paperwork preparation remain unreported',
+                              continued.proactive.view()['detail'])
+            with Server(0, save_path=self.path) as completed:
+                self.assertTrue(completed.proactive.view()['enabled'])
+                self.assertEqual(completed.proactive.step()['status'], 'completed')
+                self.assertEqual(completed.household.coordination.state['messages'], before['messages'])
+            model.assert_called_once()
+
+    def test_saved_monitoring_choice_is_resident_controlled_and_defaults_off_for_old_saves(self):
+        host = self.server.household
+        with self.assertRaises(ValueError):
+            host.event('coordination_watch_visits', 'family', host.revision, {'enabled': True}, actor_id='alex')
+        self.server.proactive.set_enabled(True)
+        self.server.proactive.set_enabled(False)
+        with Server(0, save_path=self.path) as restarted:
+            self.assertFalse(restarted.proactive.view()['enabled'])
+        old = host.coordination.dump()
+        old.pop('watch_visit_changes', None)
+        self.assertFalse(Coordination.restore(host, old).state['watch_visit_changes'])
+        with self.assertRaises(ValueError):
+            Coordination.restore(host, old | {'watch_visit_changes': 'true'})
+
+    def test_unsaved_monitoring_choice_cannot_start_automatic_work(self):
+        with patch('careanchor.persistence.save_household', side_effect=OSError('Local save unavailable')):
+            result = self.server.proactive.set_enabled(True)
+            self.assertEqual(result['status'], 'blocked')
+            with patch.object(astra_bridge, 'interpret_request') as model:
+                self.server.proactive.step()
+                model.assert_not_called()
+        with Server(0, save_path=self.path) as restarted:
+            self.assertFalse(restarted.proactive.view()['enabled'])
+
     def test_changed_notice_plans_once_then_waits_for_own_acceptance(self):
         watcher, host = self.server.proactive, self.server.household
-        count = host.coordination.state['human_interactions']['resident']
         with patch.object(astra_bridge, 'interpret_request', return_value=proposal()) as model:
             self.assertEqual(watcher.step()['status'], 'disabled')
             self.assertFalse(model.called)
             watcher.set_enabled(True)
+            count = host.coordination.state['human_interactions']['resident']
             result = watcher.step()
             self.assertEqual(result['status'], 'waiting_helper')
             context = model.call_args.args[0]['proactive_notice']

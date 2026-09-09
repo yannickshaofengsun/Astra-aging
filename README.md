@@ -31,7 +31,7 @@ The simulation and included home renders work without a model connection or Blen
 3. Turn on **Watch visit changes**, then choose **Simulate hospital changing the visit**. CareAnchor checks the new notice, current plan and availability, then creates separate responsibility requests.
 4. Switch to each helper's perspective to accept their own responsibilities. CareAnchor waits for those replies; an accepted duty does not establish physical attendance.
 
-Monitoring covers changed notices for an existing fictional visit while the server runs. It defaults off after restart and makes no model calls while the source is unchanged.
+Monitoring covers changed notices for an existing fictional visit while the server runs. Your choice is saved with the household and restored after restart; new households and older saves default off. Pending responsibilities continue when helpers reply, without repeating the original request. Unchanged notices make no model calls.
 
 ## How it works
 

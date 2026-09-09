@@ -68,7 +68,7 @@ class Coordination:
                       "preferences": {"delivery_window": "morning", "messages": "brief", "routine": "keep"},
                       "actors": {key: {"name": name, "day": 1, "available": bool(host.week.profile["helper_available"])} for key, name in ACTORS.items()},
                       "requests": [], "orders": [], "messages": [], "history": [], "feedback": [], "replies": [],
-                      "clock_minute": 540, "reminders": [],
+                      "clock_minute": 540, "reminders": [], "watch_visit_changes": False,
                       "preference_memory": {}, "availability": [], "memory_revision": 0, "memory_cutoff": 0,
                       "human_interactions": {"resident": 0, "alex": 0, "morgan": 0},
                       "shared": self._shared_facts()}
@@ -1021,6 +1021,13 @@ class Coordination:
         payload = {} if payload is None else payload
         if not isinstance(payload, dict):
             raise ValueError("Action details must be an object.")
+        if action == "coordination_watch_visits":
+            if actor != "resident" or set(payload) != {"enabled"} or type(payload["enabled"]) is not bool:
+                raise ValueError("The resident chooses whether to watch visit changes.")
+            self.state["watch_visit_changes"] = payload["enabled"]
+            text = "Visit-change monitoring " + ("enabled." if payload["enabled"] else "disabled.")
+            self._touch(actor, action, text)
+            return text
         if action in ("coordination_remember_preference", "coordination_forget_preference"):
             if actor != "resident":
                 raise ValueError("Only the resident changes their own remembered preferences.")
@@ -1279,6 +1286,9 @@ class Coordination:
     @classmethod
     def restore(cls, host, data):
         result = cls(host)
+        if isinstance(data, dict) and "watch_visit_changes" not in data:
+            data = deepcopy(data)
+            data["watch_visit_changes"] = False
         if isinstance(data, dict) and isinstance(data.get("requests"), list):
             data = deepcopy(data)
             old_keys = set(_request("", "", 1, 1, None)) - {"source_digest", "memory_redacted"}
@@ -1341,6 +1351,8 @@ class Coordination:
             if type(data["version"]) is not int or data["version"] < 0 or type(data["day"]) is not int or not 1 <= data["day"] <= 365:
                 fail()
             if type(data["clock_minute"]) is not int or not 0 <= data["clock_minute"] <= 1439:
+                fail()
+            if type(data["watch_visit_changes"]) is not bool:
                 fail()
             if date.fromisoformat(data["date"]) != date(2026, 9, 15) + timedelta(days=data["day"] - 1) or type(data["setup_done"]) is not bool:
                 fail()

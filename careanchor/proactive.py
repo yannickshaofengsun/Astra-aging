@@ -6,18 +6,24 @@ import threading
 class VisitWatcher:
     def __init__(self, server):
         self.server = server
-        self.enabled = False
         self.generation = 0
-        self.status = 'disabled'
-        self.detail = 'Visit monitoring is off. Enabling applies only while this server runs.'
+        self.status = 'watching' if self.enabled else 'disabled'
+        self.detail = 'Checking the saved visit-monitoring choice.'
         self.request_id = ''
         self.gate = threading.Lock()
 
+    @property
+    def enabled(self):
+        return self.server.household.coordination.state['watch_visit_changes']
+
     def view(self):
         with self.server.state_lock:
-            if self.enabled and self.server.household.mission_persistence['status'] == 'save_error':
-                return {'enabled': True, 'status': 'blocked', 'request_id': self.request_id,
-                        'detail': 'The household could not be saved. Automatic coordination is stopped; review the local save.'}
+            if self.server.household.mission_persistence['status'] == 'save_error':
+                return {'enabled': self.enabled, 'status': 'blocked', 'request_id': self.request_id,
+                        'detail': 'The household could not be saved. Automatic coordination is stopped. Save again before restarting; the previous saved choice may otherwise return.'}
+            if not self.enabled:
+                return {'enabled': False, 'status': 'disabled', 'request_id': '',
+                        'detail': 'Visit monitoring is off. Existing responsibilities are unchanged.'}
             if self.enabled and self.request_id:
                 request = next((r for r in self.server.household.coordination.state['requests']
                                 if r['id'] == self.request_id), None)
@@ -36,7 +42,8 @@ class VisitWatcher:
         with self.server.state_lock:
             if enabled != self.enabled:
                 self.generation += 1
-            self.enabled = enabled
+                host = self.server.household
+                host.event('coordination_watch_visits', 'resident', host.revision, {'enabled': enabled})
             self.status = 'watching' if enabled else 'disabled'
             self.detail = ('Watching the fictional hospital for changes to an existing visit plan.' if enabled else
                            'Visit monitoring is off. Existing responsibilities are unchanged.')
@@ -112,7 +119,7 @@ class VisitWatcher:
             return self.view()
         try:
             with self.server.state_lock:
-                if not self.enabled:
+                if not self.enabled or self.server.household.mission_persistence['status'] == 'save_error':
                     return self.view()
                 event = self._event()
                 if event is None:

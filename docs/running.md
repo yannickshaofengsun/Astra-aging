@@ -14,7 +14,7 @@ The simulation works without inference. A failed model call produces an error in
 
 Starting `python3 server.py` saves the household under ignored `.runtime/mission-state.json`. **Saved rehearsal** offers explicit save and reload. Restoring a valid snapshot keeps pending responsibilities without repeating actions; invalid snapshots produce a visible load error and a fresh household. A failed write preserves the previous saved file and reports the failure.
 
-Visit-change monitoring must be enabled again after a process restart. It watches a supplied fictional hospital source, not a real provider feed or physical sensors.
+Visit-change monitoring keeps the resident's saved on/off choice across process restarts. New households and older saves start with monitoring off. Restored monitoring rechecks current permissions and the source notice before acting; pending responsibilities remain waiting for their named helpers. A failed save pauses automatic work and shows a warning because the previous saved choice may return on restart. It watches a supplied fictional hospital source, not a real provider feed or physical sensors. The service must be running; operating-system autostart is not configured.
 
 ## Optional Apple Messages
 

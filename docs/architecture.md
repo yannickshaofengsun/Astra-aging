@@ -22,6 +22,8 @@ Resident-selected sharing applies before context reaches the model or a family v
 
 [persistence.py](../careanchor/persistence.py) validates and atomically saves local snapshots. Reload restores facts and pending work without replaying effects; stale revisions cannot authorize new actions. Messages receipt cursors and send claims live separately in SQLite, because an uncertain external send must not be repeated merely after a restart. [Setup notes](running.md#optional-apple-messages) explain the backup boundary.
 
+Visit monitoring reads its on/off choice from that same saved household, including after a reload or reset. Only the resident changes it. A restored pending visit continues on the named helper's later reply; duplicate replies and unchanged notices do not create another request. The continuation check covers a three-hour demonstration-clock delay and agreed reminder across restarts. This clock remains simulated, and interrupted model interpretations still require review rather than automatic replay.
+
 Role filtering demonstrates intended visibility within this prototype. It is not authenticated multi-person or multi-household access.
 
 ## What the evidence establishes
